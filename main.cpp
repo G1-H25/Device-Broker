@@ -1,6 +1,9 @@
 #include <iostream>
 
 void thisHereIsSomthingBad() {}
+
 int main() {
- return 0;
+	auto help_me = false;
+	return 0;
+
 }
