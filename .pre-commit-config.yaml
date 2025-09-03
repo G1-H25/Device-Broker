@@ -13,4 +13,3 @@ repos:
         args:
           - --quiet
           - --verbose=0
-          - --filter=-whitespace/line_length,-whitespace/parens
