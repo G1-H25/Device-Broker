@@ -1,0 +1,13 @@
+name: "Cpplint"
+
+on:
+  workflow_dispatch: null
+  pull_request: null
+
+jobs:
+  cpplint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install linting tools
+        run: pipx run cpplint --recursive . --config=CPPLINT.cfg
