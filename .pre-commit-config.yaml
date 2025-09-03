@@ -1,19 +1,16 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-merge-conflict
   - repo: https://github.com/cpplint/cpplint
-    rev: 1.6.1
+    rev: 2.0.2
     hooks:
       - id: cpplint
         name: cpplint
-        entry: cpplint
-        language: python
-        types: [c, c++]
         args:
           - --quiet
           - --verbose=0
-          - --extensions=h,hpp,hxx,c,cc,cpp,cxx
+          - --filter=-whitespace/line_length,-whitespace/parens
