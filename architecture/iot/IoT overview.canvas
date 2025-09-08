@@ -1,0 +1,23 @@
+{
+	"nodes":[
+		{"id":"155090fc5d149793","type":"file","file":"Backend.md","x":-200,"y":-1120,"width":400,"height":470},
+		{"id":"a377583c78b445de","type":"file","file":"Package device.md","x":-200,"y":-140,"width":400,"height":400},
+		{"id":"5928af4ee5bda98e","type":"text","text":"PHONE?\nLocation data\nShared phone line","x":-500,"y":-580,"width":250,"height":96},
+		{"id":"a79667e5c82e7afe","type":"file","file":"Broker.md","x":-200,"y":-600,"width":400,"height":400},
+		{"id":"0a6a775c2bf406b1","type":"text","text":"Think about AP auth","x":-520,"y":-200,"width":250,"height":60},
+		{"id":"6968402d08515997","type":"file","file":"JSON payload to backend.md","x":260,"y":-850,"width":400,"height":400},
+		{"id":"6126b03c35c42ee7","x":260,"y":-280,"width":400,"height":400,"type":"file","file":"JSON payload from Package device to Broker.md"}
+	],
+	"edges":[
+		{"id":"7c1c40d598d5fb57","fromNode":"a79667e5c82e7afe","fromSide":"top","toNode":"155090fc5d149793","toSide":"bottom"},
+		{"id":"64d00fdfa76337ff","fromNode":"155090fc5d149793","fromSide":"bottom","toNode":"a79667e5c82e7afe","toSide":"top"},
+		{"id":"18495f789d039adc","fromNode":"a79667e5c82e7afe","fromSide":"bottom","toNode":"a377583c78b445de","toSide":"top"},
+		{"id":"56acc7b9140de146","fromNode":"5928af4ee5bda98e","fromSide":"right","toNode":"a79667e5c82e7afe","toSide":"left"},
+		{"id":"4462e9aaf444513f","fromNode":"0a6a775c2bf406b1","fromSide":"right","toNode":"a377583c78b445de","toSide":"left"},
+		{"id":"d8dd6b67a0d40d4b","fromNode":"0a6a775c2bf406b1","fromSide":"right","toNode":"a79667e5c82e7afe","toSide":"left"},
+		{"id":"2c1cb937defc2d9e","fromNode":"a79667e5c82e7afe","fromSide":"right","toNode":"6968402d08515997","toSide":"bottom"},
+		{"id":"b40e86de29a0d4bc","fromNode":"6968402d08515997","fromSide":"top","toNode":"155090fc5d149793","toSide":"right"},
+		{"id":"0699e03997960f3b","fromNode":"a377583c78b445de","fromSide":"right","toNode":"6126b03c35c42ee7","toSide":"bottom"},
+		{"id":"028d4f6d1e048970","fromNode":"6126b03c35c42ee7","fromSide":"top","toNode":"a79667e5c82e7afe","toSide":"bottom"}
+	]
+}
