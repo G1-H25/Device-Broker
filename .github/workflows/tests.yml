@@ -16,19 +16,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     if: github.event_name != 'schedule'
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3'
-        
+
     - name: Install PlatformIO
       run: pip install platformio
-        
+
     - name: Cache PlatformIO dependencies
       uses: actions/cache@v3
       with:
@@ -36,22 +36,22 @@ jobs:
         key: ${{ runner.os }}-pio-${{ hashFiles('platformio.ini') }}
         restore-keys: |
           ${{ runner.os }}-pio-
-          
+
     - name: Run All Tests
       run: pio test -e native_all
-      
+
     - name: Build Arduino Firmware
-      run: pio run -e uno_r4_wifi
-      
+      run: pio run -e esp32-s3-devkitm-1
+
     - name: Install cpplint
       run: pip install cpplint
-      
+
     - name: Run Code Style Check
       run: |
         echo "Checking C++ code style..."
         cpplint --recursive --extensions=cpp,h src/ lib/ include/ || true
         echo "Code style check completed"
-        
+
     - name: Upload Test Results
       uses: actions/upload-artifact@v4
       if: always()
@@ -68,22 +68,22 @@ jobs:
       steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3'
-          
+
       - name: Install PlatformIO
         run: pip install platformio
-        
+
       - name: Cache PlatformIO dependencies
         uses: actions/cache@v3
         with:
           path: ~/.platformio
-      
+
       - name: Run Smoke Tests
         run: pio test -e native_smoke
-      
+
       - name: Build Arduino Firmware
-        run: pio run -e uno_r4_wifi
+        run: pio run -e esp32-s3-devkitm-1
