@@ -40,7 +40,7 @@ jobs:
     - name: Run All Tests
       run: pio test -e native_all
 
-    - name: Build Arduino Firmware
+    - name: Build ESP32 Firmware
       run: pio run -e esp32-s3-devkitm-1
 
     - name: Install cpplint
@@ -85,5 +85,5 @@ jobs:
       - name: Run Smoke Tests
         run: pio test -e native_smoke
 
-      - name: Build Arduino Firmware
+      - name: Build ESP32 Firmware
         run: pio run -e esp32-s3-devkitm-1
