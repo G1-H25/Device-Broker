@@ -5,6 +5,7 @@ repos:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-merge-conflict
+      - id: detect-private-key
   - repo: https://github.com/cpplint/cpplint
     rev: 2.0.2
     hooks:
@@ -13,3 +14,8 @@ repos:
         args:
           - --quiet
           - --verbose=0
+  - repo: https://github.com/ibm/detect-secrets
+    rev: 0.13.1+ibm.62.dss
+    hooks:
+      - id: detect-secrets
+        args: [ scan ]
