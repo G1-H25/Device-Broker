@@ -1,0 +1,40 @@
+on:
+  push:
+    branches:
+      - "!main"
+      - "!development"
+
+jobs:
+  run_smoke_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3'
+
+      - name: Install PlatformIO
+        run: pip install platformio
+
+      - name: Cache PlatformIO dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.platformio
+          key: ${{ runner.os }}-pio-${{ hashFiles('platformio.ini') }}
+          restore-keys: |
+            ${{ runner.os }}-pio-
+
+      - name: Run smoke tests
+        run: pio test -e native_smoke
+
+  run_cpplint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@5
+
+      - run: apt-get install cpplint
+
+      - name: Run cpplint
+        run: cpplint --recursive --extensions=cpp,h src/ lib/ include/ || true
