@@ -29,8 +29,8 @@ typedef struct sensor_t {
     MeasurementEntry *entries;
 } Sensor;
 
-int pushMeasurementEntry(Sensor *sensor, MeasurementEntry entry);
-int pushEntries(Sensor *sensor, MeasurementEntry entries[], int num_entries);
+int pushMeasurementEntry(Sensor *sensor, MeasurementEntry *entry);
+int pushEntries(Sensor *sensor, MeasurementEntry *entries[], int num_entries);
 
 int removeMeasurementEntry(Sensor *sensor, int index);
 int popMeasurementEntry(Sensor *sensor);
