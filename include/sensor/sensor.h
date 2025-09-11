@@ -12,7 +12,6 @@
 #define INCLUDE_SENSOR_SENSOR_H_
 
 #include <cstdint>
-#include "sensor/measurement-entry.h"
 
 namespace sensor {
 
