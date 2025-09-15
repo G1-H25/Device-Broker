@@ -12,10 +12,21 @@
 
 namespace Storage {
 
-FlashBuffer::FlashBuffer(uuid_t uuid) : Storage(uuid) {
+FlashBuffer::FlashBuffer(uuid_t uuid, uint16_t sensor_index) : Storage(uuid) {
+    EEPROM.begin(sizeof(uuid_t) + sizeof(MeasurementEntry) * BUFFER_SIZE_PER_SENSOR);
 }
 
 void FlashBuffer::pushMeasurement(const MeasurementEntry *measurement) {
+    // EEPROM.put(0, this->uuid_.data());
+    // EEPROM.put(this->head * sizeof(MeasurementEntry) + sizeof(uuid_t), *measurement);
+
+    EEPROM.write(this->head * sizeof(MeasurementEntry) + sizeof(uuid_t), measurement->humidity);
+    EEPROM.write(this->head * sizeof(MeasurementEntry) + sizeof(uuid_t), measurement->humidity);
+    EEPROM.write(this->head * sizeof(MeasurementEntry) + sizeof(uuid_t), measurement->humidity);
+
+    if (this->entry_count_ + 1 < this->buffer_size_) this->entry_count_++;
+
+    this->head = ++this->head % this->buffer_size_;
 }
 
 bool FlashBuffer::tryPop() {

@@ -18,7 +18,7 @@ namespace Storage {
 
 class FlashBuffer : public Storage {
  public:
-    explicit FlashBuffer(uuid_t uuid);
+    explicit FlashBuffer(uuid_t uuid, uint16_t sensor_index);
 
     void pushMeasurement(const MeasurementEntry *measurement) override;
     bool tryPop() override;
