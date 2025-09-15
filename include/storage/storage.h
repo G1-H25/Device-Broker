@@ -16,7 +16,7 @@
 
 #define BUFFER_SIZE_PER_SENSOR 32
 
-namespace Storage {
+namespace storage {
 
 typedef std::array<uint8_t, 16> uuid_t;
 
@@ -35,6 +35,7 @@ class Storage {
     virtual bool hasData() = 0;
     virtual uint32_t available() = 0;
 
+    virtual const uuid_t getUUID() = 0;
     virtual const MeasurementEntry *getLatestMeasurement() = 0;
 
  protected:
@@ -46,6 +47,6 @@ class Storage {
     const uint8_t buffer_size_ = BUFFER_SIZE_PER_SENSOR;
 };
 
-}  // namespace Storage
+}  // namespace storage
 
 #endif  // INCLUDE_STORAGE_STORAGE_H_

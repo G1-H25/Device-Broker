@@ -11,7 +11,7 @@
 
 #include "storage/memory_buffer.h"
 
-namespace Storage {
+namespace storage {
 
 MemoryBuffer::MemoryBuffer(uuid_t uuid) : Storage(uuid) {
 }
@@ -46,4 +46,4 @@ const MeasurementEntry *MemoryBuffer::getLatestMeasurement() {
     return &this->entries_[head ? head - 1 : head];
 }
 
-}  // namespace Storage
+}  // namespace storage

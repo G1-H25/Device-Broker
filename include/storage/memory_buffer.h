@@ -13,11 +13,9 @@
 
 #include "storage/storage.h"
 
-namespace Storage {
+namespace storage {
 
 class MemoryBuffer : public Storage {
- private:
-    std::array<MeasurementEntry, BUFFER_SIZE_PER_SENSOR> entries_;
  public:
     explicit MemoryBuffer(uuid_t uuid);
 
@@ -27,9 +25,13 @@ class MemoryBuffer : public Storage {
     bool hasData() override;
     uint32_t available() override;
 
+    const uuid_t getUUID();
     const MeasurementEntry *getLatestMeasurement() override;
+
+ private:
+    std::array<MeasurementEntry, BUFFER_SIZE_PER_SENSOR> entries_;
 };
 
-}  // namespace Storage
+}  // namespace storage
 
 #endif  // INCLUDE_STORAGE_MEMORY_BUFFER_H_
