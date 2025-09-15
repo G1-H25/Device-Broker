@@ -65,20 +65,16 @@ uint32_t FlashBuffer::available() {
     return this->entry_count_;
 }
 
-/**
- * @brief Gets the latest entry from the buffer
- *
- * @return const MeasurementEntry*. It is allocated on the heap. Free when done.
- */
 const MeasurementEntry *FlashBuffer::getLatestMeasurement() {
-    MeasurementEntry *entry = reinterpret_cast<MeasurementEntry *>(malloc(sizeof(MeasurementEntry)));
+    this->entries_[head] = loadFromMemory(head);
+
     esp_flash_read(
         &this->flash_chip_,
-        reinterpret_cast<void *>(entry),
+        reinterpret_cast<void *>(&this->entries_[head]),
         getCurrentEntryPositionOnFlash(),
         sizeof(MeasurementEntry));
 
-    return entry;
+    return &this->entries_[head];
 }
 
 
