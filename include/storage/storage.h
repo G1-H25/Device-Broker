@@ -30,7 +30,7 @@ class Storage {
  public:
     explicit Storage(uuid_t uuid) : uuid_(uuid) {}
 
-    virtual void pushMeasurement(const MeasurementEntry *measurement) = 0;
+    virtual void pushMeasurement(const MeasurementEntry &measurement) = 0;
     virtual bool tryPop() = 0;
     virtual bool hasData() = 0;
     virtual uint32_t available() = 0;
