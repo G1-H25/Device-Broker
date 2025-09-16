@@ -46,4 +46,8 @@ const MeasurementEntry *MemoryBuffer::getLatestMeasurement() {
     return &this->entries_[head ? head - 1 : head];
 }
 
+const uuid_t MemoryBuffer::getUUID() {
+    return uuid_;
+}
+
 }  // namespace storage
