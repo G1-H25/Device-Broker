@@ -20,6 +20,8 @@ FlashBuffer::FlashBuffer(uuid_t uuid) : Storage(uuid) {
         esp_flash_init(&this->flash_chip_);
     }
 
+    this->entries_.fill(MeasurementEntry{ 0, 0, 0 });
+
     static uint32_t storage_offset_;
 
     region_ = {
@@ -30,8 +32,11 @@ FlashBuffer::FlashBuffer(uuid_t uuid) : Storage(uuid) {
     storage_offset_ += k_flash_size;
 }
 
-void FlashBuffer::pushMeasurement(const MeasurementEntry *measurement) {
-    MeasurementEntry temp_entry{ *measurement };
+void FlashBuffer::pushMeasurement(const MeasurementEntry &measurement) {
+    MeasurementEntry temp_entry{ measurement };
+
+    this->entries_[head] = temp_entry;
+
     esp_flash_write(
         &this->flash_chip_,
         reinterpret_cast<void *>(&temp_entry),
@@ -45,6 +50,8 @@ void FlashBuffer::pushMeasurement(const MeasurementEntry *measurement) {
 
 bool FlashBuffer::tryPop() {
     if (this->entry_count_ == 0) return false;
+
+    this->entries_[head] = { 0, 0, 0 };
 
     esp_flash_write(
         &this->flash_chip_, (void *) { 0 },
@@ -77,6 +84,9 @@ const MeasurementEntry *FlashBuffer::getLatestMeasurement() {
     return &this->entries_[head];
 }
 
+const uuid_t FlashBuffer::getUUID() {
+    return this->uuid_;
+}
 
 const MeasurementEntry FlashBuffer::loadFromMemory(size_t measurement_index) {
     MeasurementEntry entry;

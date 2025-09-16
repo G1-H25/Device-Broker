@@ -16,8 +16,8 @@ namespace storage {
 MemoryBuffer::MemoryBuffer(uuid_t uuid) : Storage(uuid) {
 }
 
-void MemoryBuffer::pushMeasurement(const MeasurementEntry *measurement) {
-    this->entries_[this->head] = *measurement;
+void MemoryBuffer::pushMeasurement(const MeasurementEntry &measurement) {
+    this->entries_[this->head] = measurement;
 
     if (this->entry_count_ + 1 < this->buffer_size_) this->entry_count_++;
 
