@@ -19,7 +19,7 @@ class MemoryBuffer : public Storage {
  public:
     explicit MemoryBuffer(uuid_t uuid);
 
-    void pushMeasurement(const MeasurementEntry *measurement) override;
+    void pushMeasurement(const MeasurementEntry &measurement) override;
     bool tryPop() override;
 
     bool hasData() override;
