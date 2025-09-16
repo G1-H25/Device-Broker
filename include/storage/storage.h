@@ -35,7 +35,8 @@ class Storage {
     virtual bool hasData() = 0;
     virtual uint32_t available() = 0;
 
-    virtual const uuid_t getUUID() = 0;
+    virtual const uint8_t getBufferSize();
+    virtual const uuid_t getUUID();
     virtual const MeasurementEntry *getLatestMeasurement() = 0;
 
  protected:

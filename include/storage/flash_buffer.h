@@ -29,7 +29,6 @@ class FlashBuffer : public Storage {
     bool hasData() override;
     uint32_t available() override;
 
-    const uuid_t getUUID();
     const MeasurementEntry *getLatestMeasurement() override;
 
  private:

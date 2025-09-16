@@ -84,10 +84,6 @@ const MeasurementEntry *FlashBuffer::getLatestMeasurement() {
     return &this->entries_[head];
 }
 
-const uuid_t FlashBuffer::getUUID() {
-    return this->uuid_;
-}
-
 const MeasurementEntry FlashBuffer::loadFromMemory(size_t measurement_index) {
     MeasurementEntry entry;
     esp_flash_read(
