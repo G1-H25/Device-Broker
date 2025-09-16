@@ -9,9 +9,9 @@
 //!
 
 #include "storage/flash_buffer.h"
-#include <nvs.h>
-#include <nvs_flash.h>
 #include <memory.h>
+
+#ifdef ESP32
 
 namespace storage {
 
@@ -105,3 +105,5 @@ const uint32_t FlashBuffer::getCurrentEntryPositionOnFlash() {
 
 
 }  // namespace storage
+
+#endif  // ESP32
