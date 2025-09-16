@@ -11,9 +11,9 @@
 #ifndef INCLUDE_STORAGE_FLASH_BUFFER_H_
 #define INCLUDE_STORAGE_FLASH_BUFFER_H_
 
+#ifdef ESP32
 #include <esp_flash.h>
-#include <nvs.h>
-#include <nvs_flash.h>
+
 #include <memory>
 #include "storage/storage.h"
 
@@ -23,7 +23,7 @@ class FlashBuffer : public Storage {
  public:
     explicit FlashBuffer(uuid_t uuid);
 
-    void pushMeasurement(const MeasurementEntry *measurement) override;
+    void pushMeasurement(const MeasurementEntry &measurement) override;
     bool tryPop() override;
 
     bool hasData() override;
@@ -49,5 +49,7 @@ class FlashBuffer : public Storage {
 };
 
 }  // namespace storage
+
+#endif  // ESP32
 
 #endif  // INCLUDE_STORAGE_FLASH_BUFFER_H_
