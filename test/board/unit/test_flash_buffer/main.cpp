@@ -1,0 +1,85 @@
+//!
+//! @file main.cpp
+//! @author Love Lindeborg
+//! @brief
+//! @version 0.1
+//! @date 2025-09-16
+//!
+//! @copyright Copyright (c) 2025
+//!
+
+#include <unity.h>
+
+#include "storage/flash_buffer.h"
+
+constexpr uint32_t current_time = 123456;
+constexpr uint32_t temperature = 10;
+constexpr uint32_t humidity = 10;
+
+void test_sensor_buffer_push() {
+    storage::FlashBuffer buffer = storage::FlashBuffer({ 1 });
+
+    buffer.pushMeasurement({ 0, 0, 0 });
+
+    TEST_ASSERT_EQUAL(1, buffer.available());
+    TEST_ASSERT_TRUE(buffer.hasData());
+
+    TEST_ASSERT_NOT_NULL(buffer.getLatestMeasurement());
+
+    buffer.pushMeasurement({ 0, 0, 0 });
+
+    TEST_ASSERT_EQUAL(2, buffer.available());
+    TEST_ASSERT_NOT_NULL(buffer.getLatestMeasurement());
+
+    for (int i = 0; i < buffer.getBufferSize() + 10; i++) {
+        buffer.pushMeasurement({ 0, 0, 0 });
+    }
+
+    TEST_ASSERT_EQUAL(buffer.getBufferSize(), buffer.available());
+}
+
+void test_sensor_buffer_pop() {
+    storage::FlashBuffer buffer = storage::FlashBuffer({ 1 });
+
+    TEST_ASSERT_EQUAL(0, buffer.available());
+    TEST_ASSERT_FALSE(buffer.hasData());
+    TEST_ASSERT_FALSE(buffer.tryPop());
+
+    buffer.pushMeasurement({ 0, 0, 0 });
+
+    TEST_ASSERT_TRUE(buffer.tryPop());
+    TEST_ASSERT_FALSE(buffer.hasData());
+    TEST_ASSERT_EQUAL(0, buffer.available());
+
+    TEST_ASSERT_NULL(buffer.getLatestMeasurement());
+}
+
+void test_sensor_buffer_data_integrity() {
+    storage::FlashBuffer buffer = storage::FlashBuffer({ 1 });
+    buffer.pushMeasurement({current_time, temperature, humidity});
+
+    TEST_ASSERT_EQUAL(*(uint32_t *) storage::uuid_t{ 1 }.data(),
+                    *(uint32_t *) buffer.getUUID().data());
+    TEST_ASSERT_EQUAL(*(uint32_t *) storage::uuid_t{ 1 }.data() + sizeof(uint32_t),
+                    *(uint32_t *) buffer.getUUID().data() + sizeof(uint32_t));
+    TEST_ASSERT_EQUAL(*(uint32_t *) storage::uuid_t{ 1 }.data() + sizeof(uint32_t)
+                    * 2, *(uint32_t *) buffer.getUUID().data() + sizeof(uint32_t) * 2);
+    TEST_ASSERT_EQUAL(*(uint32_t *) storage::uuid_t{ 1 }.data() + sizeof(uint32_t)
+                    * 3, *(uint32_t *) buffer.getUUID().data() + sizeof(uint32_t) * 3);
+
+    TEST_ASSERT_EQUAL(current_time, buffer.getLatestMeasurement()->timestamp);
+    TEST_ASSERT_EQUAL(temperature, buffer.getLatestMeasurement()->temperature);
+    TEST_ASSERT_EQUAL(humidity, buffer.getLatestMeasurement()->humidity);
+}
+
+void setup() {
+    UNITY_BEGIN();
+
+    RUN_TEST(test_sensor_buffer_push);
+    RUN_TEST(test_sensor_buffer_pop);
+    RUN_TEST(test_sensor_buffer_data_integrity);
+
+    UNITY_END();
+}
+
+void loop() { }
