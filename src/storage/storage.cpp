@@ -12,7 +12,7 @@
 
 namespace storage {
 
-const uint8_t Storage::getBufferSize() {
+uint8_t Storage::getBufferSize() const {
     return this->buffer_size_;
 }
 

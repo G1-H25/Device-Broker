@@ -12,6 +12,10 @@
 
 #include "storage/memory_buffer.h"
 
+extern "C" {
+    void app_main(void);
+}
+
 constexpr uint32_t current_time = 123456;
 constexpr uint32_t temperature = 10;
 constexpr uint32_t humidity = 10;

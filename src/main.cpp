@@ -1,13 +1,7 @@
-//! Copyright 2025 
+//! Copyright 2025
 
-#include <Arduino.h>
-
-void setup()
-{
-
+void setup() {
 }
 
-void loop()
-{
-  
+void loop() {
 }

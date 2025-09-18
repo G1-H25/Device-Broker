@@ -11,7 +11,6 @@
 #ifndef INCLUDE_STORAGE_FLASH_BUFFER_H_
 #define INCLUDE_STORAGE_FLASH_BUFFER_H_
 
-#ifdef ESP32
 #include <esp_flash.h>
 
 #include <memory>
@@ -32,7 +31,7 @@ class FlashBuffer : public Storage {
     const MeasurementEntry *getLatestMeasurement() override;
 
  private:
-    const uint32_t getCurrentEntryPositionOnFlash();
+    uint32_t getCurrentEntryPositionOnFlash() const;
     const MeasurementEntry loadFromMemory(size_t measurement_index);
 
     std::array<MeasurementEntry, BUFFER_SIZE_PER_SENSOR> entries_;
@@ -48,7 +47,5 @@ class FlashBuffer : public Storage {
 };
 
 }  // namespace storage
-
-#endif  // ESP32
 
 #endif  // INCLUDE_STORAGE_FLASH_BUFFER_H_

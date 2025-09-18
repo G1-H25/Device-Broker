@@ -11,8 +11,6 @@
 #include "storage/flash_buffer.h"
 #include <memory.h>
 
-#ifdef ESP32
-
 namespace storage {
 
 FlashBuffer::FlashBuffer(uuid_t uuid) : Storage(uuid) {
@@ -35,30 +33,30 @@ FlashBuffer::FlashBuffer(uuid_t uuid) : Storage(uuid) {
 void FlashBuffer::pushMeasurement(const MeasurementEntry &measurement) {
     MeasurementEntry temp_entry{ measurement };
 
-    this->entries_[head] = temp_entry;
+    this->entries_[head_] = temp_entry;
 
     esp_flash_write(
         &this->flash_chip_,
         reinterpret_cast<void *>(&temp_entry),
-        region_.offset + sizeof(MeasurementEntry) * head + sizeof(uuid_t),
+        region_.offset + sizeof(MeasurementEntry) * head_ + sizeof(uuid_t),
         sizeof(MeasurementEntry));
 
     if (this->entry_count_ + 1 < this->buffer_size_) this->entry_count_++;
 
-    this->head = ++this->head % this->buffer_size_;
+    ++this->head_ %= this->buffer_size_;
 }
 
 bool FlashBuffer::tryPop() {
     if (this->entry_count_ == 0) return false;
 
-    this->entries_[head] = { 0, 0, 0 };
+    this->entries_[head_] = { 0, 0, 0 };
 
     esp_flash_write(
         &this->flash_chip_, (void *) { 0 },
         getCurrentEntryPositionOnFlash(),
         sizeof(MeasurementEntry));
 
-    this->head -= head % this->buffer_size_;
+    this->head_ -= head_ % this->buffer_size_;
     this->entry_count_--;
 
     return true;
@@ -73,15 +71,15 @@ uint32_t FlashBuffer::available() {
 }
 
 const MeasurementEntry *FlashBuffer::getLatestMeasurement() {
-    this->entries_[head] = loadFromMemory(head);
+    this->entries_[head_] = loadFromMemory(head_);
 
     esp_flash_read(
         &this->flash_chip_,
-        reinterpret_cast<void *>(&this->entries_[head]),
+        reinterpret_cast<void *>(&this->entries_[head_]),
         getCurrentEntryPositionOnFlash(),
         sizeof(MeasurementEntry));
 
-    return &this->entries_[head];
+    return &this->entries_[head_];
 }
 
 const MeasurementEntry FlashBuffer::loadFromMemory(size_t measurement_index) {
@@ -95,11 +93,9 @@ const MeasurementEntry FlashBuffer::loadFromMemory(size_t measurement_index) {
     return entry;
 }
 
-const uint32_t FlashBuffer::getCurrentEntryPositionOnFlash() {
-    return region_.offset + sizeof(MeasurementEntry) * head + sizeof(uuid_t);
+uint32_t FlashBuffer::getCurrentEntryPositionOnFlash() const {
+    return region_.offset + sizeof(MeasurementEntry) * head_ + sizeof(uuid_t);
 }
 
 
 }  // namespace storage
-
-#endif  // ESP32

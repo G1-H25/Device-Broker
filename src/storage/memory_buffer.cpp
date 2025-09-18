@@ -17,18 +17,18 @@ MemoryBuffer::MemoryBuffer(uuid_t uuid) : Storage(uuid) {
 }
 
 void MemoryBuffer::pushMeasurement(const MeasurementEntry &measurement) {
-    this->entries_[this->head] = measurement;
+    this->entries_[this->head_] = measurement;
 
     if (this->entry_count_ + 1 < this->buffer_size_) this->entry_count_++;
 
-    this->head = ++this->head % this->buffer_size_;
+    ++this->head_ %= this->buffer_size_;
 }
 
 bool MemoryBuffer::tryPop() {
     if (this->entry_count_ == 0) return false;
 
     this->entry_count_--;
-    this->head = ++this->head % this->buffer_size_;
+    ++this->head_ &= this->buffer_size_;
     return true;
 }
 
@@ -43,7 +43,7 @@ uint32_t MemoryBuffer::available() {
 const MeasurementEntry *MemoryBuffer::getLatestMeasurement() {
     if (this->entry_count_ == 0) return nullptr;
 
-    return &this->entries_[head ? head - 1 : head];
+    return &this->entries_[head_ ? head_ - 1 : head_];
 }
 
 }  // namespace storage
