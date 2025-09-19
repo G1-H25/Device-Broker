@@ -20,4 +20,12 @@ const uuid_t Storage::getUUID() {
     return this->uuid_;
 }
 
+bool Storage::hasData() {
+    return this->entry_count_ > 0;
+}
+
+uint32_t Storage::available() {
+    return this->entry_count_;
+}
+
 }  // namespace storage

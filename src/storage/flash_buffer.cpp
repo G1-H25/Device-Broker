@@ -11,90 +11,96 @@
 #include "storage/flash_buffer.h"
 #include <memory.h>
 
+#include <nvs_flash.h>
+#include <esp_flash.h>
+#include <mbedtls/base64.h>
+
 namespace storage {
 
 FlashBuffer::FlashBuffer(uuid_t uuid) : Storage(uuid) {
-    if (!flash_was_init_) {
-        esp_flash_init(&this->flash_chip_);
+    if (flash_was_init_ == false) {
+        if (nvs_flash_init() != ESP_OK) return;
+
+        size_t allocatedSize;
+        unsigned char base64_uuid[BASE64_UUID_STR_SIZE] = { 0 };
+        mbedtls_base64_encode(base64_uuid, BASE64_UUID_STR_SIZE - 1, &allocatedSize, uuid.data(), uuid.size());
+
+        this->base64_uuid_ = reinterpret_cast<const char*>(base64_uuid);
+
+        esp_err_t err = nvs_open(
+            base64_uuid_.data(),
+            nvs_open_mode::NVS_READWRITE,
+            &this->nvs_handle_);
+
+        if (err != ESP_OK) return;
+
+        nvs_set_blob(this->nvs_handle_, "uuid", uuid.data(), uuid.size());
+
+        strncpy(
+            reinterpret_cast<char *>(this->entry_id_buffer_.data()),
+            reinterpret_cast<const char *>(base64_uuid), this->entry_id_buffer_.size());
     }
-
-    this->entries_.fill(MeasurementEntry{ 0, 0, 0 });
-
-    static uint32_t storage_offset_;
-
-    region_ = {
-        storage_offset_,  // offset, need a better way to determine offset
-        k_flash_size  // Allocated size sensor
-    };
-
-    storage_offset_ += k_flash_size;
 }
 
 void FlashBuffer::pushMeasurement(const MeasurementEntry &measurement) {
-    MeasurementEntry temp_entry{ measurement };
+    ++head_ %= this->buffer_size_;
+    updateEntryIdBuffer(this->entry_id_buffer_, head_);
 
-    this->entries_[head_] = temp_entry;
+    if (entry_count_ < this->buffer_size_) entry_count_++;
 
-    esp_flash_write(
-        &this->flash_chip_,
-        reinterpret_cast<void *>(&temp_entry),
-        region_.offset + sizeof(MeasurementEntry) * head_ + sizeof(uuid_t),
+    nvs_set_blob(
+        this->nvs_handle_,
+        reinterpret_cast<const char *>(this->entry_id_buffer_.data()),
+        static_cast<const void *>(&measurement),
         sizeof(MeasurementEntry));
 
-    if (this->entry_count_ + 1 < this->buffer_size_) this->entry_count_++;
-
-    ++this->head_ %= this->buffer_size_;
+    latest_measurement_ = measurement;
 }
 
 bool FlashBuffer::tryPop() {
-    if (this->entry_count_ == 0) return false;
+    if (entry_count_ == 0) return false;
 
-    this->entries_[head_] = { 0, 0, 0 };
+    --entry_count_;
+    --head_ %= this->buffer_size_;
+    updateEntryIdBuffer(this->entry_id_buffer_, head_);
 
-    esp_flash_write(
-        &this->flash_chip_, (void *) { 0 },
-        getCurrentEntryPositionOnFlash(),
-        sizeof(MeasurementEntry));
+    MeasurementEntry empty{ 0, 0, 0 };
 
-    this->head_ -= head_ % this->buffer_size_;
-    this->entry_count_--;
-
-    return true;
-}
-
-bool FlashBuffer::hasData() {
-    return this->entry_count_ > 0;
-}
-
-uint32_t FlashBuffer::available() {
-    return this->entry_count_;
+    return nvs_set_blob(
+        this->nvs_handle_,
+        reinterpret_cast<const char *>(this->entry_id_buffer_.data()),
+        static_cast<const void *>(&empty),
+        sizeof(MeasurementEntry)) == ESP_OK;
 }
 
 const MeasurementEntry *FlashBuffer::getLatestMeasurement() {
-    this->entries_[head_] = loadFromMemory(head_);
-
-    esp_flash_read(
-        &this->flash_chip_,
-        reinterpret_cast<void *>(&this->entries_[head_]),
-        getCurrentEntryPositionOnFlash(),
-        sizeof(MeasurementEntry));
-
-    return &this->entries_[head_];
+    if (entry_count_ == 0) return nullptr;
+    return &this->latest_measurement_;
 }
 
-const MeasurementEntry FlashBuffer::loadFromMemory(size_t measurement_index) {
-    MeasurementEntry entry;
-    esp_flash_read(
-        &this->flash_chip_,
-        reinterpret_cast<void *>(&entry),
-        region_.offset + sizeof(MeasurementEntry) * measurement_index + sizeof(uuid_t),
-        sizeof(MeasurementEntry));
+MeasurementEntry *FlashBuffer::loadMeasurement(size_t index) {
+    entry_id_buffer_t temp_id_buffer = { 0 };
+    size_t length = temp_id_buffer.size();
 
-    return entry;
+    strncpy(
+        reinterpret_cast<char *>(this->entry_id_buffer_.data()),
+        reinterpret_cast<const char *>(temp_id_buffer.data()),
+        this->entry_id_buffer_.size());
+
+    updateEntryIdBuffer(temp_id_buffer, index);
+
+    nvs_get_blob(
+        this->nvs_handle_,
+        reinterpret_cast<const char *>(temp_id_buffer.data()),
+        static_cast<void *>(&this->buffered_measurement_),
+        &length);
+    return &this->buffered_measurement_;
 }
 
-uint32_t FlashBuffer::getCurrentEntryPositionOnFlash() const {
-    return region_.offset + sizeof(MeasurementEntry) * head_ + sizeof(uuid_t);
+
+void FlashBuffer::updateEntryIdBuffer(entry_id_buffer_t buffer, size_t index) {
+    this->entry_id_buffer_[23] = (uint8_t) index;
+    this->entry_id_buffer_[24] = (uint8_t) index >> (sizeof(uint8_t) * 4);
 }
 
 

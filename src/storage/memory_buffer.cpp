@@ -32,14 +32,6 @@ bool MemoryBuffer::tryPop() {
     return true;
 }
 
-bool MemoryBuffer::hasData() {
-    return this->entry_count_ > 0;
-}
-
-uint32_t MemoryBuffer::available() {
-    return this->entry_count_;
-}
-
 const MeasurementEntry *MemoryBuffer::getLatestMeasurement() {
     if (this->entry_count_ == 0) return nullptr;
 

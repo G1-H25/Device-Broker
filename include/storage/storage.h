@@ -22,8 +22,8 @@ typedef std::array<uint8_t, 16> uuid_t;
 
 typedef struct measurement_entry_t {
     uint32_t timestamp;
-    uint32_t temperature;
-    uint32_t humidity;
+    uint16_t temperature;
+    uint16_t humidity;
 } MeasurementEntry;
 
 class Storage {
@@ -32,8 +32,8 @@ class Storage {
 
     virtual void pushMeasurement(const MeasurementEntry &measurement) = 0;
     virtual bool tryPop() = 0;
-    virtual bool hasData() = 0;
-    virtual uint32_t available() = 0;
+    uint32_t available();
+    bool hasData();
 
     virtual uint8_t getBufferSize() const;
     virtual const uuid_t getUUID();

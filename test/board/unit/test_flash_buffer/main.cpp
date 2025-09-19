@@ -74,16 +74,16 @@ void test_sensor_buffer_data_integrity() {
     TEST_ASSERT_EQUAL(*(uint32_t *) storage::uuid_t{ 1 }.data() + sizeof(uint32_t) * 3,
                     *(uint32_t *) buffer.getUUID().data() + sizeof(uint32_t) * 3);
 
-    TEST_ASSERT_EQUAL(current_time, buffer.getLatestMeasurement()->timestamp);
-    TEST_ASSERT_EQUAL(temperature, buffer.getLatestMeasurement()->temperature);
-    TEST_ASSERT_EQUAL(humidity, buffer.getLatestMeasurement()->humidity);
+    TEST_ASSERT_EQUAL(current_time, buffer.loadMeasurement(0)->timestamp);
+    TEST_ASSERT_EQUAL(temperature, buffer.loadMeasurement(0)->temperature);
+    TEST_ASSERT_EQUAL(humidity, buffer.loadMeasurement(0)->humidity);
 }
 
 void app_main() {
     UNITY_BEGIN();
 
-    // RUN_TEST(test_sensor_buffer_push);
-    // RUN_TEST(test_sensor_buffer_pop);
+    RUN_TEST(test_sensor_buffer_push);
+    RUN_TEST(test_sensor_buffer_pop);
     RUN_TEST(test_sensor_buffer_data_integrity);
 
     UNITY_END();
