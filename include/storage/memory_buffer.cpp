@@ -12,9 +12,21 @@
 
 namespace storage {
 
+/**
+ * @brief Construct a new Memory Buffer object
+ *
+ * Stores values in a ring-buffer
+ *
+ * @param uuid UUID to use for the sensor
+ */
 MemoryBuffer::MemoryBuffer(uuid_t uuid) : Storage(uuid) {
 }
 
+/**
+ * @brief Push a measurement to the buffer
+ *
+ * @param measurement The measurement to be stored
+ */
 void MemoryBuffer::pushMeasurement(const MeasurementEntry &measurement) {
     this->entries_[this->head_] = measurement;
 
@@ -23,6 +35,11 @@ void MemoryBuffer::pushMeasurement(const MeasurementEntry &measurement) {
     ++this->head_ %= this->buffer_size_;
 }
 
+/**
+ * @brief Pop a value from memory.
+ *
+ * @returns True if success, false otherwise
+ */
 bool MemoryBuffer::tryPop() {
     if (this->entry_count_ == 0) return false;
 
@@ -31,6 +48,11 @@ bool MemoryBuffer::tryPop() {
     return true;
 }
 
+/**
+ * @brief Get the latest measurement from memory
+
+ * @returns `MeasurementEntry *` or a `nullptr` failed
+ */
 const MeasurementEntry *MemoryBuffer::getLatestMeasurement() {
     if (this->entry_count_ == 0) return nullptr;
 
