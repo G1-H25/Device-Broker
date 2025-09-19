@@ -17,7 +17,7 @@
 
 #include "storage/storage.h"
 
-#define BASE64_UUID_STR_SIZE 23
+#define BASE64_UUID_STR_SIZE 25
 
 namespace storage {
 
@@ -26,7 +26,7 @@ typedef std::array<uint8_t, BASE64_UUID_STR_SIZE + 2> entry_id_buffer_t;
 
 class FlashBuffer : public Storage {
  public:
-    explicit FlashBuffer(uuid_t uuid);
+    explicit FlashBuffer(uuid_t uuid, uint32_t sensor_id);
 
     void pushMeasurement(const MeasurementEntry &measurement) override;
     bool tryPop() override;
@@ -35,13 +35,16 @@ class FlashBuffer : public Storage {
     MeasurementEntry *loadMeasurement(size_t index);
 
  private:
-    void updateEntryIdBuffer(entry_id_buffer_t buffer, size_t index);
+    void updateEntryIdBuffer(entry_id_buffer_t *buffer, size_t index);
 
     MeasurementEntry latest_measurement_;
     MeasurementEntry buffered_measurement_;
 
-    std::string_view base64_uuid_;
     entry_id_buffer_t entry_id_buffer_ = { 0 };
+    uint32_t sensor_id_;
+    static constexpr uint16_t k_storage_name_size_ = 5;
+    static constexpr uint16_t k_storage_index_str_size_ = 5;
+    std::array<char, k_storage_name_size_> storage_name_;
 
     const size_t k_flash_size = sizeof(uuid_t) + sizeof(MeasurementEntry) * BUFFER_SIZE_PER_SENSOR;
     static bool flash_was_init_;

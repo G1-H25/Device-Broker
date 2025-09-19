@@ -21,7 +21,9 @@ constexpr uint32_t temperature = 10;
 constexpr uint32_t humidity = 10;
 
 void test_sensor_buffer_push() {
-    storage::FlashBuffer buffer = storage::FlashBuffer({ 1 });
+    storage::uuid_t uuid;
+    uuid.fill(0xFF);
+    storage::FlashBuffer buffer = storage::FlashBuffer(uuid, 0x7612);
 
     buffer.pushMeasurement({ 0, 0, 0 });
 
@@ -43,7 +45,9 @@ void test_sensor_buffer_push() {
 }
 
 void test_sensor_buffer_pop() {
-    storage::FlashBuffer buffer = storage::FlashBuffer({ 1 });
+    storage::uuid_t uuid;
+    uuid.fill(0xFF);
+    storage::FlashBuffer buffer = storage::FlashBuffer(uuid, 0x7612);
 
     TEST_ASSERT_EQUAL(0, buffer.available());
     TEST_ASSERT_FALSE(buffer.hasData());
@@ -59,20 +63,22 @@ void test_sensor_buffer_pop() {
 }
 
 void test_sensor_buffer_data_integrity() {
-    storage::FlashBuffer buffer = storage::FlashBuffer({ 1 });
+    storage::uuid_t uuid;
+    uuid.fill(0xFF);
+    storage::FlashBuffer buffer = storage::FlashBuffer(uuid, 0x7612);
     buffer.pushMeasurement({current_time, temperature, humidity});
     buffer.pushMeasurement({current_time + 10, temperature + 10, humidity + 10});
 
-    TEST_ASSERT_EQUAL(*(uint32_t *) storage::uuid_t{ 1 }.data(),
+    TEST_ASSERT_EQUAL(*(uint32_t *) uuid.data(),
                     *(uint32_t *) buffer.getUUID().data());
 
-    TEST_ASSERT_EQUAL(*(uint32_t *) storage::uuid_t{ 1 }.data() + sizeof(uint32_t),
+    TEST_ASSERT_EQUAL(*(uint32_t *) uuid.data() + sizeof(uint32_t),
                     *(uint32_t *) buffer.getUUID().data() + sizeof(uint32_t));
 
-    TEST_ASSERT_EQUAL(*(uint32_t *) storage::uuid_t{ 1 }.data() + sizeof(uint32_t) * 2,
+    TEST_ASSERT_EQUAL(*(uint32_t *) uuid.data() + sizeof(uint32_t) * 2,
                 *(uint32_t *) buffer.getUUID().data() + sizeof(uint32_t) * 2);
 
-    TEST_ASSERT_EQUAL(*(uint32_t *) storage::uuid_t{ 1 }.data() + sizeof(uint32_t) * 3,
+    TEST_ASSERT_EQUAL(*(uint32_t *) uuid.data() + sizeof(uint32_t) * 3,
                     *(uint32_t *) buffer.getUUID().data() + sizeof(uint32_t) * 3);
 
     TEST_ASSERT_NOT_NULL(buffer.loadMeasurement(0));
