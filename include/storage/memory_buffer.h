@@ -1,12 +1,12 @@
-//!
-//! @file memory_buffer.h
-//! @author Love Lindeborg
-//! @brief
-//! @version 0.1
-//! @date 2025-09-15
-//!
-//! @copyright Copyright (c) 2025
-//!
+/**
+ * @file memory_buffer.cpp
+ * @author Love Lindeborg
+ * @brief
+ * @version 0.1
+ * @date 2025-09-15
+ *
+ * @copyright Copyright (c) 2025
+*/
 
 #ifndef INCLUDE_STORAGE_MEMORY_BUFFER_H_
 #define INCLUDE_STORAGE_MEMORY_BUFFER_H_

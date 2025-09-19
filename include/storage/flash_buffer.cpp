@@ -1,12 +1,12 @@
-//!
-//! @file flash_buffer.cpp
-//! @author Love Lindeborg
-//! @brief
-//! @version 0.1
-//! @date 2025-09-15
-//!
-//! @copyright Copyright (c) 2025
-//!
+/**
+ * @file flash_buffer.cpp
+ * @author Love Lindeborg
+ * @brief
+ * @version 0.1
+ * @date 2025-09-15
+ *
+ * @copyright Copyright (c) 2025
+*/
 
 #include "storage/flash_buffer.h"
 #include <memory.h>

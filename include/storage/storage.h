@@ -1,12 +1,12 @@
-//!
-//! @file sensor.h
-//! @author Love Lindeborg
-//! @brief
-//! @version 0.1
-//! @date 2025-09-09
-//!
-//! @copyright Copyright (c) 2025
-//!
+/**
+ * @file storage.h
+ * @author Love Lindeborg
+ * @brief
+ * @version 0.1
+ * @date 2025-09-9
+ *
+ * @copyright Copyright (c) 2025
+*/
 
 #ifndef INCLUDE_STORAGE_STORAGE_H_
 #define INCLUDE_STORAGE_STORAGE_H_

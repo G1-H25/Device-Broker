@@ -1,12 +1,12 @@
-//!
-//! @file storage.cpp
-//! @author Love Lindeborg
-//! @brief
-//! @version 0.1
-//! @date 2025-09-16
-//!
-//! @copyright Copyright (c) 2025
-//!
+/**
+ * @file storage.h
+ * @author Love Lindeborg
+ * @brief
+ * @version 0.1
+ * @date 2025-09-16
+ *
+ * @copyright Copyright (c) 2025
+*/
 
 #include "storage/storage.h"
 

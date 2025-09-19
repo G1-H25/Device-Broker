@@ -1,12 +1,12 @@
-//!
-//! @file main.cpp
-//! @author Love Lindeborg
-//! @brief
-//! @version 0.1
-//! @date 2025-09-16
-//!
-//! @copyright Copyright (c) 2025
-//!
+/**
+ * @file main.cpp
+ * @author Love Lindeborg
+ * @brief
+ * @version 0.1
+ * @date 2025-09-16
+ *
+ * @copyright Copyright (c) 2025
+*/
 
 #include <unity.h>
 
