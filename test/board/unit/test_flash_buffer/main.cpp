@@ -61,6 +61,7 @@ void test_sensor_buffer_pop() {
 void test_sensor_buffer_data_integrity() {
     storage::FlashBuffer buffer = storage::FlashBuffer({ 1 });
     buffer.pushMeasurement({current_time, temperature, humidity});
+    buffer.pushMeasurement({current_time + 10, temperature + 10, humidity + 10});
 
     TEST_ASSERT_EQUAL(*(uint32_t *) storage::uuid_t{ 1 }.data(),
                     *(uint32_t *) buffer.getUUID().data());
@@ -74,9 +75,16 @@ void test_sensor_buffer_data_integrity() {
     TEST_ASSERT_EQUAL(*(uint32_t *) storage::uuid_t{ 1 }.data() + sizeof(uint32_t) * 3,
                     *(uint32_t *) buffer.getUUID().data() + sizeof(uint32_t) * 3);
 
+    TEST_ASSERT_NOT_NULL(buffer.loadMeasurement(0));
+    TEST_ASSERT_NOT_NULL(buffer.loadMeasurement(1));
+
     TEST_ASSERT_EQUAL(current_time, buffer.loadMeasurement(0)->timestamp);
     TEST_ASSERT_EQUAL(temperature, buffer.loadMeasurement(0)->temperature);
     TEST_ASSERT_EQUAL(humidity, buffer.loadMeasurement(0)->humidity);
+
+    TEST_ASSERT_EQUAL(current_time + 10, buffer.loadMeasurement(1)->timestamp);
+    TEST_ASSERT_EQUAL(temperature + 10, buffer.loadMeasurement(1)->temperature);
+    TEST_ASSERT_EQUAL(humidity + 10, buffer.loadMeasurement(1)->humidity);
 }
 
 void app_main() {

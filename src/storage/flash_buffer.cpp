@@ -44,7 +44,7 @@ FlashBuffer::FlashBuffer(uuid_t uuid) : Storage(uuid) {
 
 void FlashBuffer::pushMeasurement(const MeasurementEntry &measurement) {
     ++head_ %= this->buffer_size_;
-    updateEntryIdBuffer(this->entry_id_buffer_, head_);
+    updateEntryIdBuffer(&this->entry_id_buffer_, head_);
 
     if (entry_count_ < this->buffer_size_) entry_count_++;
 
@@ -62,7 +62,7 @@ bool FlashBuffer::tryPop() {
 
     --entry_count_;
     --head_ %= this->buffer_size_;
-    updateEntryIdBuffer(this->entry_id_buffer_, head_);
+    updateEntryIdBuffer(&this->entry_id_buffer_, head_);
 
     MeasurementEntry empty{ 0, 0, 0 };
 
@@ -82,12 +82,19 @@ MeasurementEntry *FlashBuffer::loadMeasurement(size_t index) {
     entry_id_buffer_t temp_id_buffer = { 0 };
     size_t length = temp_id_buffer.size();
 
-    strncpy(
+    memcpy(
         reinterpret_cast<char *>(this->entry_id_buffer_.data()),
         reinterpret_cast<const char *>(temp_id_buffer.data()),
         this->entry_id_buffer_.size());
 
-    updateEntryIdBuffer(temp_id_buffer, index);
+    updateEntryIdBuffer(&temp_id_buffer, index);
+
+    int res = strncmp(
+        reinterpret_cast<char *>(this->entry_id_buffer_.data()),
+        reinterpret_cast<const char *>(temp_id_buffer.data()),
+        this->entry_id_buffer_.size());
+
+    if (res == 0) return nullptr;
 
     nvs_get_blob(
         this->nvs_handle_,
@@ -98,9 +105,9 @@ MeasurementEntry *FlashBuffer::loadMeasurement(size_t index) {
 }
 
 
-void FlashBuffer::updateEntryIdBuffer(entry_id_buffer_t buffer, size_t index) {
-    this->entry_id_buffer_[23] = (uint8_t) index;
-    this->entry_id_buffer_[24] = (uint8_t) index >> (sizeof(uint8_t) * 4);
+void FlashBuffer::updateEntryIdBuffer(entry_id_buffer_t *buffer, size_t index) {
+    (*buffer)[23] = (uint8_t)(index & 0xFF);  // Lower byte
+    (*buffer)[24] = (uint8_t)((index >> 8) & 0xFF);  // Upper byte
 }
 
 
