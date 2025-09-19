@@ -29,6 +29,7 @@ FlashBuffer::FlashBuffer(uuid_t uuid, uint32_t sensor_id) : Storage(uuid), senso
             &this->nvs_handle_);
 
         if (err != ESP_OK) return;
+        flash_was_init_ = true;
 
         nvs_set_blob(this->nvs_handle_, "uuid", uuid.data(), uuid.size());
 
