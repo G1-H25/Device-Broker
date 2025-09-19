@@ -17,6 +17,12 @@
 
 namespace storage {
 
+/**
+ * @brief Construct a new Flash Buffer object
+ *
+ * @param uuid - The unique identifier for the sensor.
+ * @param sensor_id - The sensor id is used to store values in the nvs.
+ */
 FlashBuffer::FlashBuffer(uuid_t uuid, uint32_t sensor_id) : Storage(uuid), sensor_id_(sensor_id) {
     if (flash_was_init_ == false) {
         if (nvs_flash_init() != ESP_OK) return;
@@ -39,6 +45,11 @@ FlashBuffer::FlashBuffer(uuid_t uuid, uint32_t sensor_id) : Storage(uuid), senso
     }
 }
 
+/**
+ * @brief Push and store a new measurement entry into flash.
+ *
+ * @param measurement - The measurement entry to be stored in the buffer.
+ */
 void FlashBuffer::pushMeasurement(const MeasurementEntry &measurement) {
     ++head_ %= this->buffer_size_;
     if (entry_count_ < this->buffer_size_) entry_count_++;
@@ -61,6 +72,11 @@ void FlashBuffer::pushMeasurement(const MeasurementEntry &measurement) {
     latest_measurement_ = measurement;
 }
 
+/**
+ * @brief Pop a value from flash.
+ *
+ * @returns True if success, false otherwise
+ */
 bool FlashBuffer::tryPop() {
     if (entry_count_ == 0) return false;
 
@@ -81,7 +97,15 @@ const MeasurementEntry *FlashBuffer::getLatestMeasurement() {
     return &this->latest_measurement_;
 }
 
+/**
+ * @brief Load a measurement from the flash memory
+ *
+ * @param index The index of the measurement which will be retrieved
+ * @returns `MeasurementEntry *` or a `nullptr` failed
+ */
 MeasurementEntry *FlashBuffer::loadMeasurement(size_t index) {
+    if (index >= this->buffer_size_) return nullptr;
+
     std::array<char, k_storage_name_size_ + k_storage_index_str_size_ - 1> temp_str;
     size_t length = temp_str.size();
 
