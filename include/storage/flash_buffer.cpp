@@ -83,13 +83,9 @@ bool FlashBuffer::tryPop() {
     --entry_count_;
     --head_ %= this->buffer_size_;
 
-    MeasurementEntry empty{ 0, 0, 0 };
-
-    esp_err_t err = nvs_set_blob(
+    esp_err_t err = nvs_erase_key(
         this->nvs_handle_,
-        reinterpret_cast<const char *>(this->entry_id_buffer_.data()),
-        static_cast<const void *>(&empty),
-        sizeof(MeasurementEntry));
+        reinterpret_cast<const char *>(getKeyFromIndex(head_ + 1).data()));
 
     std::unique_lock<std::mutex> lock(FlashBuffer::flash_mtx_);
     nvs_commit(this->nvs_handle_);
