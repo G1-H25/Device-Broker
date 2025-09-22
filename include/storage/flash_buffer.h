@@ -24,6 +24,7 @@ namespace storage {
 
 // Byte 23 and 24 are reserved for entry id. Little-endian.
 typedef std::array<uint8_t, BASE64_UUID_STR_SIZE + 2> entry_id_buffer_t;
+typedef std::array<char, NVS_KEY_NAME_MAX_SIZE> nvs_key_t;
 
 class FlashBuffer : public Storage {
  public:
@@ -36,7 +37,7 @@ class FlashBuffer : public Storage {
     MeasurementEntry *loadMeasurement(size_t index);
 
  private:
-    void updateEntryIdBuffer(entry_id_buffer_t *buffer, size_t index);
+    constexpr nvs_key_t getKeyFromIndex(size_t index);
 
     MeasurementEntry latest_measurement_;
     MeasurementEntry buffered_measurement_;
@@ -53,7 +54,7 @@ class FlashBuffer : public Storage {
     esp_flash_t flash_chip_;
     esp_partition_t partition_;
 
-    static nvs_handle_t nvs_handle_;
+    nvs_handle_t nvs_handle_ = 0;
     static std::mutex flash_mtx_;
 };
 
