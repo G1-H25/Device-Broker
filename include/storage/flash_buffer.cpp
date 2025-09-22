@@ -17,6 +17,7 @@
 
 namespace storage {
 
+static nvs_handle_t registered_sensors_handle;
 bool FlashBuffer::flash_was_init_ = false;
 std::mutex FlashBuffer::flash_mtx_{};
 
@@ -28,8 +29,11 @@ std::mutex FlashBuffer::flash_mtx_{};
  */
 FlashBuffer::FlashBuffer(uuid_t uuid, uint32_t sensor_id) : Storage(uuid), sensor_id_(sensor_id) {
     std::unique_lock<std::mutex> lock(FlashBuffer::flash_mtx_);
-    if (flash_was_init_ == false)
+    if (flash_was_init_ == false) {
         if (nvs_flash_init() != ESP_OK) return;
+
+        nvs_open("registered_sensors", nvs_open_mode_t::NVS_READWRITE, &registered_sensors_handle);
+    }
 
     snprintf(this->storage_name_.data(), this->storage_name_.size(), "%lx", this->sensor_id_);
 
@@ -41,7 +45,7 @@ FlashBuffer::FlashBuffer(uuid_t uuid, uint32_t sensor_id) : Storage(uuid), senso
     if (err != ESP_OK || !this->nvs_handle_) return;
     flash_was_init_ = true;
 
-    nvs_set_blob(this->nvs_handle_, "uuid", uuid.data(), uuid.size());
+    nvs_set_blob(registered_sensors_handle, getKeyFromIndex(this->sensor_id_).data(), uuid.data(), uuid.size());
     nvs_commit(this->nvs_handle_);
 }
 
