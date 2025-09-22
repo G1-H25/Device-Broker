@@ -51,11 +51,11 @@ void test_sensor_buffer_pop() {
 
     TEST_ASSERT_EQUAL(0, buffer.available());
     TEST_ASSERT_FALSE(buffer.hasData());
-    TEST_ASSERT_EQUAL(ESP_ERR_NOT_ALLOWED, buffer.tryPop());
+    TEST_ASSERT_FALSE(buffer.tryPop());
 
     buffer.pushMeasurement({ 0, 0, 0 });
 
-    TEST_ASSERT_EQUAL(ESP_OK, buffer.tryPop());
+    TEST_ASSERT_TRUE(buffer.tryPop());
     TEST_ASSERT_FALSE(buffer.hasData());
     TEST_ASSERT_EQUAL(0, buffer.available());
 
@@ -63,11 +63,18 @@ void test_sensor_buffer_pop() {
 }
 
 void test_sensor_buffer_data_integrity() {
-    storage::uuid_t uuid;
+    storage::uuid_t uuid, uuid2;
     uuid.fill(0xFF);
+    uuid2.fill(0xFE);
+
     storage::FlashBuffer buffer = storage::FlashBuffer(uuid, 0x7612);
+    storage::FlashBuffer buffer2 = storage::FlashBuffer(uuid2, 0x7613);
+
     buffer.pushMeasurement({current_time, temperature, humidity});
     buffer.pushMeasurement({current_time + 10, temperature + 10, humidity + 10});
+
+    buffer2.pushMeasurement({current_time, temperature, humidity});
+    buffer2.pushMeasurement({current_time + 10, temperature + 10, humidity + 10});
 
     TEST_ASSERT_EQUAL(*(uint32_t *) uuid.data(),
                     *(uint32_t *) buffer.getUUID().data());
@@ -84,6 +91,9 @@ void test_sensor_buffer_data_integrity() {
     TEST_ASSERT_NOT_NULL(buffer.loadMeasurement(0));
     TEST_ASSERT_NOT_NULL(buffer.loadMeasurement(1));
 
+    TEST_ASSERT_NULL(buffer.loadMeasurement(10));
+    TEST_ASSERT_NULL(buffer.loadMeasurement(-1));
+
     TEST_ASSERT_EQUAL(current_time, buffer.loadMeasurement(0)->timestamp);
     TEST_ASSERT_EQUAL(temperature, buffer.loadMeasurement(0)->temperature);
     TEST_ASSERT_EQUAL(humidity, buffer.loadMeasurement(0)->humidity);
@@ -91,6 +101,32 @@ void test_sensor_buffer_data_integrity() {
     TEST_ASSERT_EQUAL(current_time + 10, buffer.loadMeasurement(1)->timestamp);
     TEST_ASSERT_EQUAL(temperature + 10, buffer.loadMeasurement(1)->temperature);
     TEST_ASSERT_EQUAL(humidity + 10, buffer.loadMeasurement(1)->humidity);
+
+    TEST_ASSERT_EQUAL(*(uint32_t *) uuid2.data(),
+                    *(uint32_t *) buffer2.getUUID().data());
+
+    TEST_ASSERT_EQUAL(*(uint32_t *) uuid2.data() + sizeof(uint32_t),
+                    *(uint32_t *) buffer2.getUUID().data() + sizeof(uint32_t));
+
+    TEST_ASSERT_EQUAL(*(uint32_t *) uuid2.data() + sizeof(uint32_t) * 2,
+                    *(uint32_t *) buffer2.getUUID().data() + sizeof(uint32_t) * 2);
+
+    TEST_ASSERT_EQUAL(*(uint32_t *) uuid2.data() + sizeof(uint32_t) * 3,
+                    *(uint32_t *) buffer2.getUUID().data() + sizeof(uint32_t) * 3);
+
+    TEST_ASSERT_NOT_NULL(buffer2.loadMeasurement(0));
+    TEST_ASSERT_NOT_NULL(buffer2.loadMeasurement(1));
+
+    TEST_ASSERT_NULL(buffer2.loadMeasurement(10));
+    TEST_ASSERT_NULL(buffer2.loadMeasurement(-1));
+
+    TEST_ASSERT_EQUAL(current_time, buffer2.loadMeasurement(0)->timestamp);
+    TEST_ASSERT_EQUAL(temperature, buffer2.loadMeasurement(0)->temperature);
+    TEST_ASSERT_EQUAL(humidity, buffer2.loadMeasurement(0)->humidity);
+
+    TEST_ASSERT_EQUAL(current_time + 10, buffer2.loadMeasurement(1)->timestamp);
+    TEST_ASSERT_EQUAL(temperature + 10, buffer2.loadMeasurement(1)->temperature);
+    TEST_ASSERT_EQUAL(humidity + 10, buffer2.loadMeasurement(1)->humidity);
 }
 
 void app_main() {
