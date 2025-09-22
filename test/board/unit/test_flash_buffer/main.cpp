@@ -9,7 +9,7 @@
 */
 
 #include <unity.h>
-
+#include <esp_vfs.h>
 #include "storage/flash_buffer.h"
 
 extern "C" {
@@ -51,11 +51,11 @@ void test_sensor_buffer_pop() {
 
     TEST_ASSERT_EQUAL(0, buffer.available());
     TEST_ASSERT_FALSE(buffer.hasData());
-    TEST_ASSERT_FALSE(buffer.tryPop());
+    TEST_ASSERT_EQUAL(ESP_ERR_NOT_ALLOWED, buffer.tryPop());
 
     buffer.pushMeasurement({ 0, 0, 0 });
 
-    TEST_ASSERT_TRUE(buffer.tryPop());
+    TEST_ASSERT_EQUAL(ESP_OK, buffer.tryPop());
     TEST_ASSERT_FALSE(buffer.hasData());
     TEST_ASSERT_EQUAL(0, buffer.available());
 

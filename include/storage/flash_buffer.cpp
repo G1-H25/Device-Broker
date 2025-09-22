@@ -17,6 +17,10 @@
 
 namespace storage {
 
+nvs_handle_t FlashBuffer::nvs_handle_ = 0;
+bool FlashBuffer::flash_was_init_ = false;
+std::mutex FlashBuffer::flash_mtx_{};
+
 /**
  * @brief Construct a new Flash Buffer object
  *
@@ -24,6 +28,7 @@ namespace storage {
  * @param sensor_id - The sensor id is used to store values in the nvs.
  */
 FlashBuffer::FlashBuffer(uuid_t uuid, uint32_t sensor_id) : Storage(uuid), sensor_id_(sensor_id) {
+    std::unique_lock<std::mutex> lock(FlashBuffer::flash_mtx_);
     if (flash_was_init_ == false) {
         if (nvs_flash_init() != ESP_OK) return;
 
@@ -34,10 +39,11 @@ FlashBuffer::FlashBuffer(uuid_t uuid, uint32_t sensor_id) : Storage(uuid), senso
             nvs_open_mode::NVS_READWRITE,
             &this->nvs_handle_);
 
-        if (err != ESP_OK) return;
+        if (err != ESP_OK || !this->nvs_handle_) return;
         flash_was_init_ = true;
 
         nvs_set_blob(this->nvs_handle_, "uuid", uuid.data(), uuid.size());
+        nvs_commit(this->nvs_handle_);
 
         strncpy(
             reinterpret_cast<char *>(this->entry_id_buffer_.data()),
@@ -51,17 +57,15 @@ FlashBuffer::FlashBuffer(uuid_t uuid, uint32_t sensor_id) : Storage(uuid), senso
  * @param measurement - The measurement entry to be stored in the buffer.
  */
 void FlashBuffer::pushMeasurement(const MeasurementEntry &measurement) {
-    ++head_ %= this->buffer_size_;
+    if (!this->flash_was_init_) return;
+
+    head_++;
+    head_ %= this->buffer_size_;
     if (entry_count_ < this->buffer_size_) entry_count_++;
 
     std::array<char, k_storage_name_size_ + k_storage_index_str_size_ - 1> temp_str;
 
-    memcpy(
-        temp_str.begin(),
-        this->storage_name_.begin(),
-        this->storage_name_.size());
-
-    snprintf(temp_str.begin() + storage_name_.size() - 1, k_storage_index_str_size_, "_%lx", head_);
+    snprintf(temp_str.begin(), temp_str.size(), "%s_%lx", storage_name_.begin(), head_);
 
     nvs_set_blob(
         this->nvs_handle_,
@@ -69,6 +73,8 @@ void FlashBuffer::pushMeasurement(const MeasurementEntry &measurement) {
         static_cast<const void *>(&measurement),
         sizeof(MeasurementEntry));
 
+    std::unique_lock<std::mutex> lock(FlashBuffer::flash_mtx_);
+    nvs_commit(this->nvs_handle_);
     latest_measurement_ = measurement;
 }
 
@@ -78,22 +84,27 @@ void FlashBuffer::pushMeasurement(const MeasurementEntry &measurement) {
  * @returns True if success, false otherwise
  */
 bool FlashBuffer::tryPop() {
-    if (entry_count_ == 0) return false;
+    if (!this->flash_was_init_) return -1;
+    if (entry_count_ == 0) return ESP_ERR_NOT_ALLOWED;
 
     --entry_count_;
     --head_ %= this->buffer_size_;
 
     MeasurementEntry empty{ 0, 0, 0 };
 
-    return nvs_set_blob(
+    esp_err_t err = nvs_set_blob(
         this->nvs_handle_,
         reinterpret_cast<const char *>(this->entry_id_buffer_.data()),
         static_cast<const void *>(&empty),
-        sizeof(MeasurementEntry)) == ESP_OK;
+        sizeof(MeasurementEntry));
+
+    std::unique_lock<std::mutex> lock(FlashBuffer::flash_mtx_);
+    nvs_commit(this->nvs_handle_);
+    return err;
 }
 
 const MeasurementEntry *FlashBuffer::getLatestMeasurement() {
-    if (entry_count_ == 0) return nullptr;
+    if (!this->flash_was_init_ || entry_count_ == 0) return nullptr;
     return &this->latest_measurement_;
 }
 
@@ -101,28 +112,23 @@ const MeasurementEntry *FlashBuffer::getLatestMeasurement() {
  * @brief Load a measurement from the flash memory
  *
  * @param index The index of the measurement which will be retrieved
- * @returns `MeasurementEntry *` or a `nullptr` failed
+ * @returns `MeasurementEntry *` or a `nullptr` if failed
  */
 MeasurementEntry *FlashBuffer::loadMeasurement(size_t index) {
-    if (index >= this->buffer_size_) return nullptr;
+    if (!this->flash_was_init_ || index >= this->buffer_size_) return nullptr;
 
     std::array<char, k_storage_name_size_ + k_storage_index_str_size_ - 1> temp_str;
     size_t length = temp_str.size();
 
-    memcpy(
-        temp_str.begin(),
-        this->storage_name_.begin(),
-        this->storage_name_.size());
-
-    snprintf(temp_str.begin() + storage_name_.size() - 1, k_storage_index_str_size_, "_%x", index + 1);
+    snprintf(temp_str.begin(), temp_str.size(), "%s_%x", storage_name_.begin(), index + 1);
 
     esp_err_t res = nvs_get_blob(
         this->nvs_handle_,
         reinterpret_cast<const char *>(temp_str.begin()),
-        static_cast<void *>(&this->buffered_measurement_),
+        reinterpret_cast<void *>(&this->buffered_measurement_),
         &length);
 
-    return res == ESP_OK ? &this->buffered_measurement_ : nullptr;
+    return res == ESP_OK || length != sizeof(MeasurementEntry) ? &this->buffered_measurement_ : nullptr;
 }
 
 }  // namespace storage

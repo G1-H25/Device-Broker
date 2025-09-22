@@ -14,6 +14,7 @@
 #include <nvs_flash.h>
 #include <esp_flash.h>
 #include <memory>
+#include <mutex>
 
 #include "storage/storage.h"
 
@@ -50,14 +51,11 @@ class FlashBuffer : public Storage {
     static bool flash_was_init_;
 
     esp_flash_t flash_chip_;
-    nvs_handle_t nvs_handle_;
     esp_partition_t partition_;
-    uint16_t index_offset_;
 
-    static uint8_t config_register_;
+    static nvs_handle_t nvs_handle_;
+    static std::mutex flash_mtx_;
 };
-
-inline bool FlashBuffer::flash_was_init_ = false;
 
 }  // namespace storage
 
