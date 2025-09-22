@@ -45,8 +45,33 @@ FlashBuffer::FlashBuffer(uuid_t uuid, uint32_t sensor_id) : Storage(uuid), senso
     if (err != ESP_OK || !this->nvs_handle_) return;
     flash_was_init_ = true;
 
+
+    nvs_iterator_t iterator;
+    esp_err_t res = nvs_entry_find_in_handle(registered_sensors_handle, nvs_type_t::NVS_TYPE_BLOB, &iterator);
+
+    // uuid_t temp_uuid;
+    // size_t uuid_size = temp_uuid.size();
+
+    // nvs_entry_info_t info;
+    // while (res == ESP_OK) {
+    //     nvs_entry_info(iterator, &info);
+
+    //     nvs_get_blob(
+    //         this->nvs_handle_,
+    //         "uuid",
+    //         temp_uuid.begin(),
+    //         &uuid_size);
+
+    //     int res = timingsafe_memcmp(uuid.begin(), temp_uuid.data(), uuid_size);
+
+    //     if (res == 0) break;
+    //     res = nvs_entry_next(&iterator);
+    // }
+
+    nvs_release_iterator(iterator);
+
     nvs_set_blob(registered_sensors_handle, getKeyFromIndex(this->sensor_id_).data(), uuid.data(), uuid.size());
-    nvs_commit(this->nvs_handle_);
+    nvs_commit(registered_sensors_handle);
 }
 
 /**
@@ -130,5 +155,14 @@ constexpr nvs_key_t FlashBuffer::getKeyFromIndex(size_t index) {
     return temp_str;
 }
 
+void FlashBuffer::clearAll() {
+    this->entry_count_ = 0;
+    this->head_ = 0;
+
+    nvs_erase_all(this->nvs_handle_);
+
+    std::unique_lock<std::mutex> lock(FlashBuffer::flash_mtx_);
+    nvs_commit(this->nvs_handle_);
+}
 
 }  // namespace storage

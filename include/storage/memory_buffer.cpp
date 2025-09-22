@@ -59,4 +59,10 @@ const MeasurementEntry *MemoryBuffer::getLatestMeasurement() {
     return &this->entries_[head_ ? head_ - 1 : head_];
 }
 
+void MemoryBuffer::clearAll() {
+    this->entries_.fill({0, 0, 0});
+    this->entry_count_ = 0;
+    this->head_ = 0;
+}
+
 }  // namespace storage

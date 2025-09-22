@@ -25,6 +25,7 @@ class MemoryBuffer : public Storage {
 
     const MeasurementEntry *getLatestMeasurement() override;
 
+    void clearAll() override;
  private:
     std::array<MeasurementEntry, BUFFER_SIZE_PER_SENSOR> entries_;
 };

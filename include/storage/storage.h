@@ -39,6 +39,8 @@ class Storage {
     virtual const uuid_t getUUID();
     virtual const MeasurementEntry *getLatestMeasurement() = 0;
 
+    virtual void clearAll() = 0;
+
  protected:
     uint32_t head_ = 0;
     uint32_t entry_count_ = 0;

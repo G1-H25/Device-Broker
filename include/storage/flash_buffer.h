@@ -36,6 +36,8 @@ class FlashBuffer : public Storage {
     const MeasurementEntry *getLatestMeasurement() override;
     MeasurementEntry *loadMeasurement(size_t index);
 
+    void clearAll() override;
+
  private:
     constexpr nvs_key_t getKeyFromIndex(size_t index);
 
