@@ -32,7 +32,7 @@ class Storage {
 
     virtual void pushMeasurement(const MeasurementEntry &measurement) = 0;
     virtual bool tryPop() = 0;
-    uint32_t available();
+    size_t available();
     bool hasData();
 
     virtual uint8_t getBufferSize() const;

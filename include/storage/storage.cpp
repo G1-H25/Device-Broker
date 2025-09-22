@@ -8,6 +8,7 @@
  * @copyright Copyright (c) 2025
 */
 
+#include <cstddef>
 #include "storage/storage.h"
 
 namespace storage {
@@ -24,7 +25,7 @@ bool Storage::hasData() {
     return this->entry_count_ > 0;
 }
 
-uint32_t Storage::available() {
+size_t Storage::available() {
     return this->entry_count_;
 }
 
