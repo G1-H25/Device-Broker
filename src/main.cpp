@@ -1,13 +1,20 @@
-//! Copyright 2025 
+/**
+ * @file main.cpp
+ * @author Love Lindeborg
+ * @brief
+ * @version 0.1
+ * @date 2025-09-16
+ *
+ * @copyright Copyright (c) 2025
+*/
 
-#include <Arduino.h>
+#include <unity.h>
 
-void setup()
-{
+#include "storage/flash_buffer.h"
 
+extern "C" {
+    void app_main(void);
 }
 
-void loop()
-{
-  
+void app_main() {
 }
