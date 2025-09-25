@@ -13,28 +13,61 @@
 #include <sstream>
 #include "http/http_interface.h"
 
-void http::HttpClient::getRequest(std::string_view endpoint) {
+namespace http {
+
+void HttpClient::get(std::string_view endpoint) {
     std::stringstream stream;
     stream << url_ << endpoint;
 
     esp_http_client_config_t conf = {
         .url = stream.str().c_str(),
-        .use_global_ca_store = true
+        .method = HTTP_METHOD_GET
     };
 
-    esp_http_client_init(&conf);
-    esp_http_client_set_method(this->client_handle_, esp_http_client_method_t::HTTP_METHOD_GET);
-    esp_http_client_set_authtype(this->client_handle_, esp_http_client_auth_type_t::HTTP_AUTH_TYPE_NONE);
-    esp_http_client_set_url(this->client_handle_, stream.str().c_str());
+    this->client_handle_ = esp_http_client_init(&conf);
 
-    esp_http_client_open(this->client_handle_, 0);
-    esp_http_client_close(this->client_handle_);
+    esp_http_client_perform(client_handle_);
 
     esp_http_client_cleanup(this->client_handle_);
 }
 
-void http::HttpClient::postRequest(std::string_view endpoint, std::string_view data, bool is_json) {
+void HttpClient::post(std::string_view endpoint, std::string_view data, bool is_json) {
+    std::stringstream stream;
+    stream << url_ << endpoint;
+
+    esp_http_client_config_t conf = {
+        .url = stream.str().c_str(),
+        .method = HTTP_METHOD_POST
+    };
+
+    this->client_handle_ = esp_http_client_init(&conf);
+
+    esp_http_client_set_header(this->client_handle_, "Content-Type", is_json ? "application/json" : "application/text");
+    esp_http_client_set_post_field(this->client_handle_, data.begin(), data.size());
+
+    esp_http_client_perform(client_handle_);
+
+    esp_http_client_cleanup(this->client_handle_);
 }
 
-void http::HttpClient::putRequest(std::string_view endpoint, std::string_view data, bool is_json) {
+
+void HttpClient::put(std::string_view endpoint, std::string_view data, bool is_json) {
+    std::stringstream stream;
+    stream << url_ << endpoint;
+
+    esp_http_client_config_t conf = {
+        .url = stream.str().c_str(),
+        .method = HTTP_METHOD_PUT
+    };
+
+    this->client_handle_ = esp_http_client_init(&conf);
+
+    esp_http_client_set_header(this->client_handle_, "Content-Type", is_json ? "application/json" : "application/text");
+    esp_http_client_set_post_field(this->client_handle_, data.begin(), data.size());
+
+    esp_http_client_perform(client_handle_);
+
+    esp_http_client_cleanup(this->client_handle_);
 }
+
+}  // namespace http

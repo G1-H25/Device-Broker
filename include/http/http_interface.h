@@ -35,9 +35,9 @@ class HttpClient {
  public:
     HttpClient(std::string_view url, uint16_t port);
 
-    void getRequest(std::string_view endpoint);
-    void postRequest(std::string_view endpoint, std::string_view data, bool is_json);
-    void putRequest(std::string_view endpoint, std::string_view data, bool is_json);
+    void get(std::string_view endpoint);
+    void post(std::string_view endpoint, std::string_view data, bool is_json);
+    void put(std::string_view endpoint, std::string_view data, bool is_json);
 
  private:
     std::string_view url_;
