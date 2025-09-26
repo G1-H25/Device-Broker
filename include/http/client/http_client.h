@@ -9,27 +9,18 @@
  *
  */
 
-#ifndef INCLUDE_HTTP_HTTP_INTERFACE_H_
-#define INCLUDE_HTTP_HTTP_INTERFACE_H_
+#ifndef INCLUDE_HTTP_CLIENT_HTTP_CLIENT_H_
+#define INCLUDE_HTTP_CLIENT_HTTP_CLIENT_H_
+
+#include <esp_http_client.h>
 
 #include <cstddef>
 #include <string_view>
 #include <optional>
 
+#include "secrets/routes.h"
+
 namespace http {
-
-enum RequestMethod {
-    GET,
-    PUT,
-    POST
-};
-
-struct HttpRequestData {
-    RequestMethod method;
-    std::string_view endpoint;
-    std::optional<std::string_view> data;
-    bool is_json = false;
-};
 
 class HttpClient {
  public:
@@ -47,4 +38,4 @@ class HttpClient {
 
 }  // namespace http
 
-#endif  // INCLUDE_HTTP_HTTP_INTERFACE_H_
+#endif  // INCLUDE_HTTP_CLIENT_HTTP_CLIENT_H_
