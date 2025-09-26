@@ -6,3 +6,6 @@
 
 .vscode
 .venv
+
+secrets/*.h
+~secrets/README.md
