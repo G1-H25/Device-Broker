@@ -44,7 +44,7 @@ jobs:
       run: pio test -e native_unit
 
     - name: Build ESP32 Firmware
-      run: pio run --target build -e esp32
+      run: pio run -e esp32
 
     - name: Install cpplint
       run: pip install cpplint
