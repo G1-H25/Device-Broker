@@ -8,8 +8,6 @@
  * @copyright Copyright (c) 2025
 */
 
-#include <unity.h>
-
 #include "storage/flash_buffer.h"
 
 extern "C" {
