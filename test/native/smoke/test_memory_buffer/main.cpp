@@ -18,12 +18,13 @@ constexpr uint32_t humidity = 10;
 
 void test_smoke_sensor_buffer_push_pop() {
     storage::MemoryBuffer buffer = storage::MemoryBuffer({ 1 });
+    storage::MeasurementEntry entry;
 
     buffer.pushMeasurement({0, 0, 0});
 
     TEST_ASSERT_EQUAL(1, buffer.available());
 
-    TEST_ASSERT_TRUE(buffer.tryPop());
+    TEST_ASSERT_TRUE(buffer.tryPop(entry));
     TEST_ASSERT_EQUAL(0, buffer.available());
 }
 

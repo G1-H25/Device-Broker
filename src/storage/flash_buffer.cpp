@@ -81,8 +81,8 @@ FlashBuffer::FlashBuffer(uuid_t uuid, uint32_t sensor_id) : Storage(uuid), senso
  *
  * @param measurement - The measurement entry to be stored in the buffer.
  */
-void FlashBuffer::pushMeasurement(const MeasurementEntry &measurement) {
-    if (!this->flash_was_init_) return;
+bool FlashBuffer::pushMeasurement(const MeasurementEntry &measurement) {
+    if (!this->flash_was_init_) return false;
 
     head_++;
     head_ %= this->buffer_size_;
@@ -101,6 +101,8 @@ void FlashBuffer::pushMeasurement(const MeasurementEntry &measurement) {
     std::unique_lock<std::mutex> lock(FlashBuffer::flash_mtx_);
     nvs_commit(this->nvs_handle_);
     latest_measurement_ = measurement;
+
+    return true;
 }
 
 /**
@@ -108,7 +110,7 @@ void FlashBuffer::pushMeasurement(const MeasurementEntry &measurement) {
  *
  * @returns True if success, false otherwise
  */
-bool FlashBuffer::tryPop() {
+bool FlashBuffer::tryPop(MeasurementEntry &out) {
     if (!this->flash_was_init_ || entry_count_ == 0) return false;
 
     --entry_count_;
@@ -123,9 +125,9 @@ bool FlashBuffer::tryPop() {
     return err == ESP_OK;
 }
 
-const MeasurementEntry *FlashBuffer::getLatestMeasurement() {
-    if (!this->flash_was_init_ || entry_count_ == 0) return nullptr;
-    return &this->latest_measurement_;
+bool FlashBuffer::getLatestMeasurement(MeasurementEntry &out) {
+    if (!this->flash_was_init_ || entry_count_ == 0) return false;
+    return (out = this->latest_measurement_, true);
 }
 
 /**
@@ -134,8 +136,8 @@ const MeasurementEntry *FlashBuffer::getLatestMeasurement() {
  * @param index The index of the measurement which will be retrieved
  * @returns `MeasurementEntry *` or a `nullptr` if failed
  */
-MeasurementEntry *FlashBuffer::loadMeasurement(size_t index) {
-    if (!this->flash_was_init_ || index >= this->available()) return nullptr;
+bool FlashBuffer::loadMeasurement(size_t index, MeasurementEntry &out) {
+    if (!this->flash_was_init_ || index >= this->available()) return false;
 
     nvs_key_t temp_str;
     size_t length = temp_str.size();
@@ -148,7 +150,8 @@ MeasurementEntry *FlashBuffer::loadMeasurement(size_t index) {
         reinterpret_cast<void *>(&this->buffered_measurement_),
         &length);
 
-    return res == ESP_OK || length != sizeof(MeasurementEntry) ? &this->buffered_measurement_ : nullptr;
+    out = this->buffered_measurement_;
+    return res == ESP_OK;
 }
 
 constexpr nvs_key_t FlashBuffer::getKeyFromIndex(size_t index) {
@@ -170,5 +173,3 @@ void FlashBuffer::clearAll() {
 }  // namespace storage
 
 #endif  // ESP_PLATFORM
-
-

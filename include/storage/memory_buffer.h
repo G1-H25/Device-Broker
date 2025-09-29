@@ -20,10 +20,10 @@ class MemoryBuffer : public Storage {
  public:
     explicit MemoryBuffer(uuid_t uuid);
 
-    void pushMeasurement(const MeasurementEntry &measurement) override;
-    bool tryPop() override;
+    bool pushMeasurement(const MeasurementEntry &measurement) override;
+    bool tryPop(MeasurementEntry &out) override;
 
-    const MeasurementEntry *getLatestMeasurement() override;
+    bool getLatestMeasurement(MeasurementEntry &out) override;
 
     void clearAll() override;
  private:

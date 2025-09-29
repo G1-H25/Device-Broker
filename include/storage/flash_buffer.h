@@ -30,11 +30,11 @@ class FlashBuffer : public Storage {
  public:
     explicit FlashBuffer(uuid_t uuid, uint32_t sensor_id);
 
-    void pushMeasurement(const MeasurementEntry &measurement) override;
-    bool tryPop() override;
+    bool pushMeasurement(const MeasurementEntry &measurement) override;
+    bool tryPop(MeasurementEntry &out) override;
 
-    const MeasurementEntry *getLatestMeasurement() override;
-    MeasurementEntry *loadMeasurement(size_t index);
+    bool getLatestMeasurement(MeasurementEntry &out) override;
+    bool loadMeasurement(size_t index, MeasurementEntry &out);
 
     void clearAll() override;
 

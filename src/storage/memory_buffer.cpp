@@ -27,12 +27,13 @@ MemoryBuffer::MemoryBuffer(uuid_t uuid) : Storage(uuid) {
  *
  * @param measurement The measurement to be stored
  */
-void MemoryBuffer::pushMeasurement(const MeasurementEntry &measurement) {
+bool MemoryBuffer::pushMeasurement(const MeasurementEntry &measurement) {
     this->entries_[this->head_] = measurement;
 
     if (this->entry_count_ < this->buffer_size_) this->entry_count_++;
 
     ++this->head_ %= this->buffer_size_;
+    return true;
 }
 
 /**
@@ -40,9 +41,10 @@ void MemoryBuffer::pushMeasurement(const MeasurementEntry &measurement) {
  *
  * @returns True if success, false otherwise
  */
-bool MemoryBuffer::tryPop() {
+bool MemoryBuffer::tryPop(MeasurementEntry &out) {
     if (this->entry_count_ == 0) return false;
 
+    this->getLatestMeasurement(out);
     this->entry_count_--;
     return true;
 }
@@ -52,10 +54,11 @@ bool MemoryBuffer::tryPop() {
 
  * @returns `MeasurementEntry *` or a `nullptr` failed
  */
-const MeasurementEntry *MemoryBuffer::getLatestMeasurement() {
-    if (this->entry_count_ == 0) return nullptr;
+bool MemoryBuffer::getLatestMeasurement(MeasurementEntry &out) {
+    if (this->entry_count_ == 0) return false;
 
-    return &this->entries_[head_ ? head_ - 1 : head_];
+    out = this->entries_[head_];
+    return true;
 }
 
 void MemoryBuffer::clearAll() {
@@ -65,5 +68,3 @@ void MemoryBuffer::clearAll() {
 }
 
 }  // namespace storage
-
-
