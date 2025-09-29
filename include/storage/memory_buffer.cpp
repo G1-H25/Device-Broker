@@ -44,7 +44,7 @@ bool MemoryBuffer::tryPop() {
     if (this->entry_count_ == 0) return false;
 
     this->entry_count_--;
-    ++this->head_ &= this->buffer_size_;
+    ++this->head_ %= this->buffer_size_;
     return true;
 }
 
