@@ -37,8 +37,11 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pio-
 
-    - name: Run All Tests
-      run: pio test -e native_all
+    - name: Run Smoke Tests
+      run: pio test -e native_smoke
+
+    - name: Run Smoke Tests
+      run: pio test -e native_unit
 
     - name: Build ESP32 Firmware
       run: pio run --target build -e esp32
