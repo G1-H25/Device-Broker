@@ -18,8 +18,6 @@
 #include <string_view>
 #include <optional>
 
-#include "secrets/routes.h"
-
 namespace http {
 
 class HttpClient {
