@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef INCLUDE_HTTP_CLIENT_HTTP_CLIENT_H_
-#define INCLUDE_HTTP_CLIENT_HTTP_CLIENT_H_
+#ifndef INCLUDE_HTTP_HTTP_CLIENT_H_
+#define INCLUDE_HTTP_HTTP_CLIENT_H_
 
 #include <esp_http_client.h>
 
@@ -38,4 +38,4 @@ class HttpClient {
 
 }  // namespace http
 
-#endif  // INCLUDE_HTTP_CLIENT_HTTP_CLIENT_H_
+#endif  // INCLUDE_HTTP_HTTP_CLIENT_H_

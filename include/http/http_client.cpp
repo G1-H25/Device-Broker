@@ -11,7 +11,7 @@
 
 #include <esp_http_client.h>
 #include <sstream>
-#include "http/client/http_client.h"
+#include "http/http_client.h"
 
 namespace http {
 
