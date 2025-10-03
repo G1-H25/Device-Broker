@@ -23,7 +23,7 @@ These files contains the following information:
 #define HTTP_API_ENDPOINT_GET_TIME "/api/time"  // GET
 ```
 
-## secrets.h
+## credentials.h
 
 ```cpp
 // Replace with actual username and password. These are used to authenticate the broker towards the backend server. In exchange we will recieve a JWT.
