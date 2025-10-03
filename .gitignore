@@ -8,3 +8,5 @@ include/secrets
 
 .vscode
 .venv
+
+secrets/

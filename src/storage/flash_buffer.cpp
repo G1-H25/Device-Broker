@@ -49,7 +49,7 @@ FlashBuffer::FlashBuffer(uuid_t uuid, uint32_t sensor_id) : Storage(uuid), senso
 
 
     nvs_iterator_t iterator;
-    esp_err_t res = nvs_entry_find_in_handle(registered_sensors_handle, nvs_type_t::NVS_TYPE_BLOB, &iterator);
+    nvs_entry_find_in_handle(registered_sensors_handle, nvs_type_t::NVS_TYPE_BLOB, &iterator);
 
     // uuid_t temp_uuid;
     // size_t uuid_size = temp_uuid.size();
