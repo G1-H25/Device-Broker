@@ -10,9 +10,11 @@
 
 #include "storage/flash_buffer.h"
 
+#ifndef UNIT_TEST
 extern "C" {
     void app_main(void);
 }
 
 void app_main() {
 }
+#endif

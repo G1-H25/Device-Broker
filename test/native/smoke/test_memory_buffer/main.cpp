@@ -31,7 +31,7 @@ void test_smoke_sensor_buffer_push_pop() {
     TEST_ASSERT_EQUAL(1, buffer.available());
 
     TEST_ASSERT_TRUE(buffer.tryPop());
-    TEST_ASSERT_EQUAL(1, buffer.available());
+    TEST_ASSERT_EQUAL(0, buffer.available());
 }
 
 int main(int argc, char const *argv[]) {
