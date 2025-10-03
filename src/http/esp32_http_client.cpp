@@ -9,13 +9,18 @@
  *
  */
 
+#ifdef ESP_PLATFORM
+
 #include <esp_http_client.h>
 #include <sstream>
-#include "http/http_interface.h"
+#include "http/esp32_http_client.h"
 
 namespace http {
 
-void HttpClient::get(std::string_view endpoint) {
+EspHttpClient::EspHttpClient(const std::string_view &url, uint16_t port) : HttpClient(url, port) {
+}
+
+void EspHttpClient::get(std::string_view endpoint) {
     std::stringstream stream;
     stream << url_ << endpoint;
 
@@ -31,7 +36,7 @@ void HttpClient::get(std::string_view endpoint) {
     esp_http_client_cleanup(this->client_handle_);
 }
 
-void HttpClient::post(std::string_view endpoint, std::string_view data, bool is_json) {
+void EspHttpClient::post(std::string_view endpoint, std::string_view data, bool is_json) {
     std::stringstream stream;
     stream << url_ << endpoint;
 
@@ -51,7 +56,7 @@ void HttpClient::post(std::string_view endpoint, std::string_view data, bool is_
 }
 
 
-void HttpClient::put(std::string_view endpoint, std::string_view data, bool is_json) {
+void EspHttpClient::put(std::string_view endpoint, std::string_view data, bool is_json) {
     std::stringstream stream;
     stream << url_ << endpoint;
 
@@ -71,3 +76,5 @@ void HttpClient::put(std::string_view endpoint, std::string_view data, bool is_j
 }
 
 }  // namespace http
+
+#endif  // ESP_PLATFORM
