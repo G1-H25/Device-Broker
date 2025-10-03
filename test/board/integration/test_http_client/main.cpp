@@ -12,29 +12,35 @@
 #include <unity.h>
 
 #include "http/http_client.h"
+#include "wifi/wifi_client.h"
+#include "secrets/credentials.h"
 #include "secrets/routes.h"
 
 using http::HttpClient;
+using http::HttpResponse;
 
 void test_http_client_get() {
     HttpClient client{HTTP_API_HOST, HTTP_API_PORT};
 
-    std::string_view response = client.get("/");
-    TEST_ASSERT_EQUAL(0, response.compare("get"));  // using current value to test if get works
+    HttpResponse response = client.get("/");
+    TEST_ASSERT_EQUAL(200, response.status);  // using current value to test if get works
 }
 
 void test_http_client_post() {
     HttpClient client{HTTP_API_HOST, HTTP_API_PORT};
 
-    std::string_view response = client.get("/");
-    TEST_ASSERT_EQUAL(0, response.compare("post"));  // using current value to test if get works
+    HttpResponse response = client.get("/");
+    TEST_ASSERT_EQUAL(200, response.status);  // using current value to test if get works
 }
 
-int main(int argc, char const *argv[]) {
+extern "C" void app_main() {
     UNITY_BEGIN();
+
+    wifi::WiFiClient client{WIFI_SSID, WIFI_PASSWORD};
+    client.connect();
 
     RUN_TEST(test_http_client_get);
     RUN_TEST(test_http_client_post);
 
-    return UNITY_END();
+    UNITY_END();
 }
