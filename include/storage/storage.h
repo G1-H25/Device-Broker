@@ -30,14 +30,14 @@ class Storage {
  public:
     explicit Storage(uuid_t uuid) : uuid_(uuid) {}
 
-    virtual void pushMeasurement(const MeasurementEntry &measurement) = 0;
-    virtual bool tryPop() = 0;
+    virtual bool pushMeasurement(const MeasurementEntry &measurement) = 0;
+    virtual bool tryPop(MeasurementEntry &out) = 0;
     size_t available();
     bool hasData();
 
     virtual uint8_t getBufferSize() const;
     virtual const uuid_t getUUID();
-    virtual const MeasurementEntry *getLatestMeasurement() = 0;
+    virtual bool getLatestMeasurement(MeasurementEntry &out) = 0;
 
     virtual void clearAll() = 0;
 
