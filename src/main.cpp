@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2025
 */
 
-#include <unity.h>
+#ifndef UNIT_TEST
 
 #include "storage/flash_buffer.h"
 
@@ -18,3 +18,5 @@ extern "C" {
 
 void app_main() {
 }
+
+#endif
