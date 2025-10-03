@@ -15,13 +15,15 @@
 
 namespace http {
 
-HttpClient::HttpClient(std::string_view url, uint16_t port)
-    : port_(port), url_(url) {
+HttpClient::HttpClient(std::string_view host, uint16_t port)
+    : port_(port), host_(host) {
+
+    this->conf.host = host.begin();
 }
 
-std::string_view HttpClient::get(std::string_view endpoint) {
+HttpResponse HttpClient::get(std::string_view endpoint) {
     std::stringstream stream;
-    stream << url_ << endpoint;
+    stream << "http://" << host_ << endpoint;
 
     conf.url = stream.str().c_str();
     conf.method = HTTP_METHOD_GET;
@@ -30,13 +32,18 @@ std::string_view HttpClient::get(std::string_view endpoint) {
 
     esp_http_client_perform(client_handle_);
 
+    HttpResponse response {
+        .status = esp_http_client_get_status_code(this->client_handle_),
+        .data = std::string_view(this->response_buffer.begin()),
+    };
+
     esp_http_client_cleanup(this->client_handle_);
-    return std::string_view(this->response_buffer.begin());
+    return response;
 }
 
-std::string_view HttpClient::post(std::string_view endpoint, std::string_view data, bool is_json) {
+HttpResponse HttpClient::post(std::string_view endpoint, std::string_view data, bool is_json) {
     std::stringstream stream;
-    stream << url_ << endpoint;
+    stream << host_ << endpoint;
 
     conf.url = stream.str().c_str();
     conf.method = HTTP_METHOD_POST;
@@ -46,10 +53,18 @@ std::string_view HttpClient::post(std::string_view endpoint, std::string_view da
     esp_http_client_set_header(this->client_handle_, "Content-Type", is_json ? "application/json" : "application/text");
     esp_http_client_set_post_field(this->client_handle_, data.begin(), data.size());
 
-    esp_http_client_perform(client_handle_);
+    esp_http_client_set_url(this->client_handle_, stream.str().c_str());
+
+    esp_http_client_perform(this->client_handle_);
+
+    HttpResponse response {
+        .status = esp_http_client_get_status_code(this->client_handle_),
+        .data = std::string_view(this->response_buffer.begin()),
+    };
 
     esp_http_client_cleanup(this->client_handle_);
-    return std::string_view(this->response_buffer.begin());
+
+    return response;
 }
 
 esp_err_t HttpClient::event_handler(esp_http_client_event_t *event) {

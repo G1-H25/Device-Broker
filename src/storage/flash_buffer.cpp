@@ -170,6 +170,12 @@ void FlashBuffer::clearAll() {
     nvs_commit(this->nvs_handle_);
 }
 
+bool FlashBuffer::tryInitNVS() {
+    if (FlashBuffer::flash_was_init_) return false;
+
+    return FlashBuffer::flash_was_init_ = nvs_flash_init() == ESP_OK;
+}
+
 }  // namespace storage
 
 #endif  // ESP_PLATFORM

@@ -38,6 +38,8 @@ class FlashBuffer : public Storage {
 
     void clearAll() override;
 
+    static bool tryInitNVS();
+
  private:
     constexpr nvs_key_t getKeyFromIndex(size_t index);
 
