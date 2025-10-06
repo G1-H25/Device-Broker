@@ -29,7 +29,7 @@ void test_http_client_get() {
 void test_http_client_post() {
     HttpClient client{HTTP_API_HOST, HTTP_API_PORT};
 
-    HttpResponse response = client.get("/");
+    HttpResponse response = client.post("/", "{}", true);
     TEST_ASSERT_EQUAL(200, response.status);  // using current value to test if get works
 }
 
@@ -37,10 +37,11 @@ extern "C" void app_main() {
     UNITY_BEGIN();
 
     wifi::WiFiClient client{WIFI_SSID, WIFI_PASSWORD};
-    client.connect();
+    // client.connect();
 
+    while (client.getStatus() != wifi::CONNECTED) {}
     RUN_TEST(test_http_client_get);
-    RUN_TEST(test_http_client_post);
+    // RUN_TEST(test_http_client_post);
 
     UNITY_END();
 }

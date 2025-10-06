@@ -9,8 +9,11 @@
  *
  */
 
+#include <esp_log.h>
+
 #include <esp_http_client.h>
 #include <sstream>
+
 #include "http/http_client.h"
 
 namespace http {
@@ -18,19 +21,20 @@ namespace http {
 HttpClient::HttpClient(std::string_view host, uint16_t port)
     : port_(port), host_(host) {
 
+    memset(&conf, 0, sizeof(conf));
+
     this->conf.host = host.begin();
+    this->conf.port = port;
+    this->conf.event_handler = this->event_handler;
 }
 
 HttpResponse HttpClient::get(std::string_view endpoint) {
-    std::stringstream stream;
-    stream << "http://" << host_ << endpoint;
+    this->conf.path = endpoint.begin();
 
-    conf.url = stream.str().c_str();
-    conf.method = HTTP_METHOD_GET;
+    esp_http_client_handle_t client = esp_http_client_init(&this->conf);
+    esp_err_t err = esp_http_client_perform(client);
 
-    this->client_handle_ = esp_http_client_init(&conf);
-
-    esp_http_client_perform(client_handle_);
+    esp_http_client_cleanup(client);
 
     HttpResponse response {
         .status = esp_http_client_get_status_code(this->client_handle_),
@@ -45,7 +49,7 @@ HttpResponse HttpClient::post(std::string_view endpoint, std::string_view data, 
     std::stringstream stream;
     stream << host_ << endpoint;
 
-    conf.url = stream.str().c_str();
+    conf.path = stream.str().c_str();
     conf.method = HTTP_METHOD_POST;
 
     this->client_handle_ = esp_http_client_init(&conf);
@@ -82,6 +86,18 @@ esp_err_t HttpClient::event_handler(esp_http_client_event_t *event) {
 
                 httpClient->response_buffer[strLen] = 0;
             }
+            break;
+        case HTTP_EVENT_ERROR:
+            ESP_LOGI("HTTP Event", "HTTP_EVENT_ERROR");
+            break;
+        case HTTP_EVENT_ON_CONNECTED:
+            ESP_LOGI("HTTP Event", "HTTP_EVENT_ON_CONNECTED");
+            break;
+        case HTTP_EVENT_DISCONNECTED:
+            ESP_LOGI("HTTP Event", "HTTP_EVENT_ON_DISCONNECTED");
+            break;
+        case HTTP_EVENT_ON_FINISH:
+            ESP_LOGI("HTTP Event", "HTTP_EVENT_ON_FINISH");
             break;
         default:
             break;
