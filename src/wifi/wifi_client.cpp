@@ -83,11 +83,11 @@ WiFiClient::WiFiClient(const std::string_view &ssid, const std::string_view &pas
 
     conf_->sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
     conf_->sta.pmf_cfg.required = false;
-    conf_->sta.sae_pwe_h2e = wifi_sae_pwe_method_t::WPA3_SAE_PWE_UNSPECIFIED;
+    // conf_->sta.sae_pwe_h2e = wifi_sae_pwe_method_t::WPA3_SAE_PWE_UNSPECIFIED;
 
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, conf_));
-    ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
+    ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_FLASH));
     ESP_ERROR_CHECK(esp_wifi_start());
 }
 

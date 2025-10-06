@@ -31,25 +31,11 @@ typedef struct http_response_t {
 
 class HttpClient {
  public:
-    HttpClient(std::string_view host, uint16_t port);
-
-    HttpResponse get(std::string_view endpoint);
-    HttpResponse post(std::string_view endpoint, std::string_view data, bool is_json);
+    static HttpResponse get(std::string_view host, std::string_view endpoint);
+    static HttpResponse post(std::string_view host, std::string_view endpoint, std::string_view data, bool is_json);
 
  private:
     static esp_err_t event_handler(esp_http_client_event_t *event);
-
-    std::array<char, HTTP_RESPONSE_BUFFER_SIZE> response_buffer;
-
-    uint16_t port_;
-    std::string host_;
-    esp_http_client_handle_t client_handle_;
-    esp_http_client_event_handle_t event_handle_;
-
-    esp_http_client_config_t conf = {
-        .method = HTTP_METHOD_GET,
-        .event_handler = HttpClient::event_handler
-    };
 };
 
 
