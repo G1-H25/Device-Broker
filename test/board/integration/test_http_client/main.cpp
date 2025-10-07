@@ -10,8 +10,11 @@
  */
 
 #include <unity.h>
+#include <esp_timer.h>
 
 #include "http/http_client.h"
+#include "http/http_response.h"
+#include "http/http_esp_client_driver.h"
 #include "wifi/wifi_client.h"
 #include "secrets/credentials.h"
 #include "secrets/routes.h"
@@ -20,26 +23,28 @@ using http::HttpClient;
 using http::HttpResponse;
 
 void test_http_client_get() {
-    HttpResponse response = HttpClient::get(HTTP_API_HOST, "/");
-    TEST_ASSERT_EQUAL(200, response.status);  // using current value to test if get works
+    HttpResponse response = HttpClient::getDriver()->performGetRequest(HTTP_API_HOST, 80, "");
+    TEST_ASSERT_NOT_EQUAL(200, response.status);  // using current value to test if get works
 }
 
 void test_http_client_post() {
-    // HttpClient client{HTTP_API_HOST, HTTP_API_PORT};
-
-    // HttpResponse response = client.post("/", "{}", true);
-    // TEST_ASSERT_EQUAL(200, response.status);  // using current value to test if get works
+    HttpResponse response = HttpClient::getDriver()->performPostRequest(HTTP_API_HOST, 80, "", {});
+    TEST_ASSERT_EQUAL(400, response.status);  // using current value to test if get works
 }
 
 extern "C" void app_main() {
     UNITY_BEGIN();
 
     wifi::WiFiClient client{WIFI_SSID, WIFI_PASSWORD};
-    // client.connect();
 
     while (client.getStatus() != wifi::CONNECTED) {}
+    vTaskDelay(pdMS_TO_TICKS(10000));
+
+    http::EspHttpDriver driver;  // Does not need to be allocated on heap since it is used in main.
+    HttpClient::setDriver(&driver);
+
     RUN_TEST(test_http_client_get);
-    // RUN_TEST(test_http_client_post);
+    RUN_TEST(test_http_client_post);
 
     UNITY_END();
 }

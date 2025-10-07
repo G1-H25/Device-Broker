@@ -127,6 +127,7 @@ void WiFiClient::eventHandler(esp_event_base_t event_base, int32_t event_id, voi
     if (event_base == WIFI_EVENT) {
         switch (event_id) {
             case WIFI_EVENT_STA_CONNECTED: {
+                ESP_LOGI(TAG, "WIFI_EVENT_STA_CONNECTED");
                 this->status_ = CONNECTED;
                 break;
             }

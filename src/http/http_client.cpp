@@ -21,7 +21,6 @@
 
 #include "http/http_client.h"
 
-#define MAX_HTTP_RECV_BUFFER 512
 #define MAX_HTTP_OUTPUT_BUFFER 256
 
 #define HTTP_LOG_TAG "HTTP_CLIENT"
