@@ -31,6 +31,7 @@ class HttpClient {
     static HttpDriver *getDriver();
     static void setDriver(HttpDriver *driver) noexcept;
 
+    HttpClient() = delete;
  private:
     static HttpDriver *driver;
 };
