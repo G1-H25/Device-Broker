@@ -15,7 +15,6 @@
 #include <esp_log.h>
 #include <esp_netif.h>
 #include <http_parser.h>
-#include <sys/param.h>
 
 #include <memory>
 #include <sstream>

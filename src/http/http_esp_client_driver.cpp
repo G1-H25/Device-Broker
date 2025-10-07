@@ -12,6 +12,7 @@
 
 #include <esp_log.h>
 #include <esp_netif.h>
+#include <sys/param.h>
 
 #include "http/http_esp_client_driver.h"
 
