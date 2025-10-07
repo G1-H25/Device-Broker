@@ -1,5 +1,5 @@
 /**
- * @file http_interface.h
+ * @file http_client.h
  * @author Love Lindeborg
  * @brief
  * @version 0.1
@@ -22,22 +22,18 @@
 #include <string>
 #include <optional>
 
-namespace http {
+#include "http/http_driver.h"
 
-typedef struct http_response_t {
-    int status;
-    std::string_view data;
-} HttpResponse;
+namespace http {
 
 class HttpClient {
  public:
-    static HttpResponse get(std::string_view host, std::string_view endpoint);
-    static HttpResponse post(std::string_view host, std::string_view endpoint, std::string_view data, bool is_json);
+    static HttpDriver *getDriver();
+    static void setDriver(HttpDriver *driver) noexcept;
 
  private:
-    static esp_err_t event_handler(esp_http_client_event_t *event);
+    static HttpDriver *driver;
 };
-
 
 }  // namespace http
 
