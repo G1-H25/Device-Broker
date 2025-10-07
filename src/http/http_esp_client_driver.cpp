@@ -8,6 +8,7 @@
  * @copyright Copyright (c) 2025
  *
  */
+#ifdef ESP_PLATFORM
 
 #include <esp_log.h>
 #include <esp_netif.h>
@@ -175,3 +176,5 @@ esp_err_t EspHttpDriver::event_handler(esp_http_client_event_t *event) {
 
 
 }  // namespace http
+
+#endif  // ESP_PLATFORM

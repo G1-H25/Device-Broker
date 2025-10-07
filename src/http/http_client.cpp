@@ -8,6 +8,7 @@
  * @copyright Copyright (c) 2025
  *
  */
+#ifdef ESP_PLATFORM
 
 #include <esp_http_client.h>
 #include <esp_tls.h>
@@ -42,3 +43,5 @@ void HttpClient::setDriver(HttpDriver *driver) noexcept {
 HttpDriver *HttpClient::driver = nullptr;
 
 }  // namespace http
+
+#endif  // ESP_PLATFORM
