@@ -40,11 +40,13 @@ jobs:
     - name: Run Smoke Tests
       run: pio test -e native_smoke
 
-    - name: Run Smoke Tests
+    - name: Run Unit Tests
       run: pio test -e native_unit
 
-    - name: Build ESP32 Firmware
-      run: pio run -e esp32
+    # The ESP32 firmware cannot be build since it requires secrets from a specified file.
+    # Needs to be build locally
+    # - name: Build ESP32 Firmware
+    #   run: pio run -e esp32
 
     - name: Install cpplint
       run: pip install cpplint
