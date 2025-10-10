@@ -41,6 +41,7 @@ extern "C" void app_main() {
     UNITY_BEGIN();
 
     wifi::WiFiClient client{WIFI_SSID, WIFI_PASSWORD};
+    client.connect();
 
     while (client.getStatus() != wifi::CONNECTED) {}
     vTaskDelay(pdMS_TO_TICKS(10000));
