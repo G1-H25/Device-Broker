@@ -28,13 +28,15 @@ class HttpDriver {
     virtual HttpResponse performGetRequest(
         const std::string_view &host,
         uint16_t port,
-        const std::string_view &endpoint) = 0;
+        const std::string_view &endpoint,
+        bool use_https = true) = 0;
 
     virtual HttpResponse performPostRequest(
         const std::string_view &host,
         uint16_t port,
         const std::string_view &endpoint,
-        const HttpRequest &request) = 0;
+        const HttpRequest &request,
+        bool use_https = true) = 0;
 };
 
 }  // namespace http

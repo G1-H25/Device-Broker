@@ -24,15 +24,17 @@ using http::HttpClient;
 using http::HttpResponse;
 
 void test_http_client_get() {
-    HttpResponse response = HttpClient::getDriver()->performGetRequest(HTTP_API_HOST, 443, "/");
+    HttpResponse response = HttpClient::getDriver()->performGetRequest(
+        HTTP_API_HOST, HTTP_API_PORT, HTTP_API_HEALTH_ENDPOINT, false);
     TEST_ASSERT_EQUAL(200, response.status);  // using current value to test if get works
 
     ESP_LOGI("HTTP_GET_DATA", "%s", response.data.begin());
 }
 
 void test_http_client_post() {
-    HttpResponse response = HttpClient::getDriver()->performPostRequest(HTTP_API_HOST, 443, "/", {});
-    TEST_ASSERT_EQUAL(403, response.status);  // using current value to test if get works
+    HttpResponse response = HttpClient::getDriver()->performPostRequest(
+        HTTP_API_HOST, HTTP_API_PORT, HTTP_API_HEALTH_ENDPOINT, {}, false);
+    TEST_ASSERT_EQUAL(405, response.status);  // using current value to test if get works
 
     ESP_LOGI("HTTP_POST_DATA", "%s", response.data.begin());
 }

@@ -35,13 +35,15 @@ class EspHttpDriver : public HttpDriver {
     HttpResponse performGetRequest(
         const std::string_view &host,
         uint16_t port,
-        const std::string_view &endpoint) override;
+        const std::string_view &endpoint,
+        bool use_https = true) override;
 
     HttpResponse performPostRequest(
         const std::string_view &host,
         uint16_t port,
         const std::string_view &endpoint,
-        const HttpRequest &req) override;
+        const HttpRequest &req,
+        bool use_https = true) override;
 
  protected:
     esp_http_client_config_t *config_;

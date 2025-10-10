@@ -39,7 +39,8 @@ EspHttpDriver::~EspHttpDriver() {
 HttpResponse EspHttpDriver::performGetRequest(
                 const std::string_view &host,
                 uint16_t port,
-                const std::string_view &endpoint) {
+                const std::string_view &endpoint,
+                bool use_https ) {
     memset(this->response_buffer, 0, MAX_HTTP_OUTPUT_BUFFER + 1);
 
     *config_ = {
@@ -48,7 +49,7 @@ HttpResponse EspHttpDriver::performGetRequest(
         .path = endpoint.begin(),
         .disable_auto_redirect = true,
         .event_handler = event_handler,
-        .transport_type = HTTP_TRANSPORT_OVER_SSL,
+        .transport_type = use_https ? HTTP_TRANSPORT_OVER_SSL : HTTP_TRANSPORT_OVER_TCP,
         .user_data = response_buffer,
         .crt_bundle_attach = esp_crt_bundle_attach,
     };
@@ -94,7 +95,8 @@ HttpResponse EspHttpDriver::performPostRequest(
                 const std::string_view &host,
                 uint16_t port,
                 const std::string_view &endpoint,
-                const HttpRequest &req) {
+                const HttpRequest &req,
+                bool use_https ) {
     memset(this->response_buffer, 0, MAX_HTTP_OUTPUT_BUFFER + 1);
 
     *config_ = {
@@ -103,7 +105,7 @@ HttpResponse EspHttpDriver::performPostRequest(
         .path = endpoint.begin(),
         .disable_auto_redirect = true,
         .event_handler = event_handler,
-        .transport_type = HTTP_TRANSPORT_OVER_SSL,
+        .transport_type = use_https ? HTTP_TRANSPORT_OVER_SSL : HTTP_TRANSPORT_OVER_TCP,
         .user_data = response_buffer,
         .crt_bundle_attach = esp_crt_bundle_attach,
     };
