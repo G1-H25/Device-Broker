@@ -103,6 +103,7 @@ HttpResponse EspHttpDriver::performPostRequest(
     esp_http_client_set_header(client, "Content-Type",
         req.is_json ? "application/json" : "application/text");
 
+    esp_http_client_set_method(client, HTTP_METHOD_POST);
     esp_http_client_set_post_field(client, req.data.begin(), req.data.size());
 
     esp_err_t err = esp_http_client_perform(client);
@@ -171,7 +172,14 @@ esp_err_t EspHttpDriver::event_handler(esp_http_client_event_t *event) {
             ESP_LOGI("HTTP Event", "HTTP_EVENT_ON_DISCONNECTED");
             break;
         case HTTP_EVENT_ON_FINISH:
-            ESP_LOGI("HTTP Event", "HTTP_EVENT_ON_FINISH");
+            ESP_LOGD("HTTP Event", "HTTP_EVENT_ON_FINISH");
+            if (output_buffer != NULL) {
+#if CONFIG_EXAMPLE_ENABLE_RESPONSE_BUFFER_DUMP
+                ESP_LOG_BUFFER_HEX(TAG, output_buffer, output_len);
+#endif
+                free(output_buffer);
+                output_buffer = nullptr;
+            }
             break;
         default:
             break;
