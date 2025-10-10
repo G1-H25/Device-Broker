@@ -13,12 +13,9 @@
 #include <esp_log.h>
 #include <esp_netif.h>
 #include <sys/param.h>
+#include <esp_crt_bundle.h>
 
 #include "http/http_esp_client_driver.h"
-
-#define MAX_HTTP_OUTPUT_BUFFER 256
-
-#define HTTP_LOG_TAG "HTTP_CLIENT"
 
 namespace http {
 
@@ -28,20 +25,24 @@ EspHttpDriver::EspHttpDriver() {
 
 EspHttpDriver::~EspHttpDriver() {
     delete this->config_;
+    delete this->response_buffer;
 }
 
 HttpResponse EspHttpDriver::performGetRequest(
                 const std::string_view &host,
                 uint16_t port,
                 const std::string_view &endpoint) {
-    char response_buffer[MAX_HTTP_OUTPUT_BUFFER + 1] = { 0 };
+    memset(this->response_buffer, 0, MAX_HTTP_OUTPUT_BUFFER + 1);
 
     *config_ = {
         .host = host.begin(),
+        .port = port,
         .path = endpoint.begin(),
         .disable_auto_redirect = true,
         .event_handler = event_handler,
+        .transport_type = HTTP_TRANSPORT_OVER_SSL,
         .user_data = response_buffer,
+        .crt_bundle_attach = esp_crt_bundle_attach,
     };
 
     esp_netif_t *netif = esp_netif_get_default_netif();
@@ -77,14 +78,17 @@ HttpResponse EspHttpDriver::performPostRequest(
                 uint16_t port,
                 const std::string_view &endpoint,
                 const HttpRequest &req) {
-    char response_buffer[MAX_HTTP_OUTPUT_BUFFER + 1] = { 0 };
+    memset(this->response_buffer, 0, MAX_HTTP_OUTPUT_BUFFER + 1);
 
     *config_ = {
         .host = host.begin(),
+        .port = port,
         .path = endpoint.begin(),
         .disable_auto_redirect = true,
         .event_handler = event_handler,
+        .transport_type = HTTP_TRANSPORT_OVER_SSL,
         .user_data = response_buffer,
+        .crt_bundle_attach = esp_crt_bundle_attach,
     };
 
     esp_netif_t *netif = esp_netif_get_default_netif();

@@ -19,11 +19,10 @@
 
 namespace http {
 
-enum HttpMethod {
-    GET,
-    POST
-};
-
+/**
+ * @brief The HTTP driver is an abstract class that needs to
+ * be implemented to match target platform. For example ESP32.
+ */
 class HttpDriver {
  public:
     virtual HttpResponse performGetRequest(

@@ -26,6 +26,13 @@
 
 namespace http {
 
+/**
+ * @brief The HTTP client class is a class that manages the
+ * http driver which will be used to perform requests.
+ *
+ * All member methods are static. This class cannot be
+ * instantiated.
+ */
 class HttpClient {
  public:
     static HttpDriver *getDriver();

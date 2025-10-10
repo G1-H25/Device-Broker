@@ -14,8 +14,19 @@
 
 #include "http/http_driver.h"
 
+#define MAX_HTTP_OUTPUT_BUFFER 256
+
+#define HTTP_LOG_TAG "HTTP_CLIENT"
+
 namespace http {
 
+/**
+ * @brief This class is a wrapper for the `esp_http_client` library.
+ * Inherits from `HttpDriver` class
+ *
+ * @implements HttpDriver
+ *
+ */
 class EspHttpDriver : public HttpDriver {
  public:
     EspHttpDriver();
@@ -39,6 +50,8 @@ class EspHttpDriver : public HttpDriver {
     static esp_err_t event_handler(esp_http_client_event_t *event);
 
     esp_http_client_handle_t handle_;
+
+    char *response_buffer = new char[MAX_HTTP_OUTPUT_BUFFER + 1];
 };
 
 }  // namespace http
