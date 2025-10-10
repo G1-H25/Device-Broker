@@ -28,6 +28,14 @@ EspHttpDriver::~EspHttpDriver() {
     delete this->response_buffer;
 }
 
+/**
+ * @brief Performs a post request to the specified host and port.
+ *
+ * @param host The host to get from. For example `archlinux.org`
+ * @param port Which port to get from. For HTTPS it should be port `443` unless it has been changed by host machine
+ * @param endpoint Which endpoint in the host to get from. For example `/` or `/api/measurement`
+ * @return HttpResponse Contains data and status code.
+ */
 HttpResponse EspHttpDriver::performGetRequest(
                 const std::string_view &host,
                 uint16_t port,
@@ -73,6 +81,15 @@ HttpResponse EspHttpDriver::performGetRequest(
     };
 }
 
+/**
+ * @brief Performs a post request to the specified host and port.
+ *
+ * @param host The host to post to. For example `archlinux.org`
+ * @param port Which port to post to. For HTTPS it should be port `443` unless it has been changed by host machine
+ * @param endpoint Which endpoint in the host to post to. For example `/` or `/api/measurement`
+ * @param req Data to send
+ * @return HttpResponse Contains data and status code.
+ */
 HttpResponse EspHttpDriver::performPostRequest(
                 const std::string_view &host,
                 uint16_t port,
