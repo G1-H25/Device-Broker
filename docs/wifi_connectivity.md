@@ -1,5 +1,9 @@
 # WiFi Connection
 
+## Examples
+
+- [Connecting to WiFi](examples/wifi/wifi_connection.cpp)
+
 ## Connect to WiFi
 
 ```cpp

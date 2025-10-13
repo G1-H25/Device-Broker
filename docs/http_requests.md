@@ -7,6 +7,10 @@ The HTTP client class is a class that manages the HTTP driver which will be used
 All member methods are static. This class cannot be
 instantiated.
 
+## Examples
+
+- [HTTP get HTTPS get and post](examples/http/http_get_and_post.cpp)
+
 ## Before requests
 
 1. Connect to WiFi using [WiFiClient](wifi_connectivity.md)
