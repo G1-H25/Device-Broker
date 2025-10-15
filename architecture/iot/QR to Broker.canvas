@@ -1,0 +1,20 @@
+{
+	"nodes":[
+		{"id":"7cb4e4aaf9730c7d","x":-600,"y":-975,"width":770,"height":1100,"type":"group","label":"Components"},
+		{"id":"d0358bbdfda88546","x":200,"y":-160,"width":1074,"height":285,"type":"group","label":"Program flow "},
+		{"id":"b619d8bd15036989","type":"text","text":"Register package (Backend API)","x":966,"y":45,"width":288,"height":60},
+		{"id":"6c73e317c067fde4","type":"text","text":"Register package (BLE)","x":966,"y":-55,"width":250,"height":55},
+		{"id":"11a1d400102867b1","type":"text","text":"Driver","x":220,"y":-5,"width":250,"height":50},
+		{"id":"64a90ccc2373c890","type":"text","text":"Package scanned","x":580,"y":-5,"width":250,"height":50},
+		{"id":"73642213116f88d6","type":"text","text":"Register broker","x":220,"y":-135,"width":250,"height":50},
+		{"id":"b27a0ecc52375c8f","type":"text","text":"Register to BLE service","x":580,"y":-140,"width":250,"height":60},
+		{"id":"9de3fe4e63fd444c","type":"text","text":"# Broker\n\nThe broker will have two BLE services:\n\n1. First for sensors to utilize to send sensor data and register and unregister sensors.\n2. The second will be used by the mobile app to register and unregister sensors to the broker.\n","x":-100,"y":-955,"width":250,"height":413},
+		{"id":"b987a4d16acb3c46","type":"text","text":"# Phone\n\n## Broker discovery\n\n- The app scans the broker’s QR code to obtain the broker-id.\n- The broker-id is also serves as the BLE service ID for communicating with that broker to register and unregister packages from the broker.\n\n## Registering a package\n\n1. The app scans a package QR code to read the package-id.\n2. The app sends a BLE request to the broker (using the broker-id service) to register that package-id with the broker.\n3. Once registered, the package-id is sent to the backend server and linked to that broker. This can happen in one of two ways:\n    - The broker forwards the package-id to the backend, or\n    - The broker notifies the backend directly once it finishes registering the package.\n\n## Deregistering a package\n\n- If the same package QR code is scanned again, the app sends a BLE request to the broker to deregister that package-id from the broker. The app then sends a request for the backend to deregister the package from the broker.\n## Summary\n\n- Broker QR → broker-id (also BLE service id).\n- Package QR → package-id.\n- First scan of a package: register via BLE, then link package-id to backend.\n- Second scan of same package: deregister via BLE.","x":-580,"y":-955,"width":445,"height":1060}
+	],
+	"edges":[
+		{"id":"0de9ffd7c28de254","fromNode":"64a90ccc2373c890","fromSide":"right","toNode":"6c73e317c067fde4","toSide":"left","label":"uuid"},
+		{"id":"f05d9e9f24d8fa25","fromNode":"64a90ccc2373c890","fromSide":"right","toNode":"b619d8bd15036989","toSide":"left","label":"uuid"},
+		{"id":"314a535ef821c36a","fromNode":"11a1d400102867b1","fromSide":"right","toNode":"64a90ccc2373c890","toSide":"left","label":"uuid"},
+		{"id":"05fa942742a2bb26","fromNode":"73642213116f88d6","fromSide":"right","toNode":"b27a0ecc52375c8f","toSide":"left"}
+	]
+}
