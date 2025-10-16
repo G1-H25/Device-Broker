@@ -8,5 +8,5 @@
 
 ## Examples
 
-- [HTTP get HTTPS get and post](examples/http/http_get_and_post.cpp)
-- [Connecting to WiFi](examples/wifi/wifi_connection.cpp)
+- [HTTP get HTTPS get and post](docs/examples/http/http_get_and_post.cpp)
+- [Connecting to WiFi](docs/examples/wifi/wifi_connection.cpp)

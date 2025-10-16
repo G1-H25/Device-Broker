@@ -9,6 +9,8 @@
  *
  */
 
+#include <esp_log.h>
+
 #include "http/http_esp_client_driver.h"
 #include "http/http_client.h"
 
