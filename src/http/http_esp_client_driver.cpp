@@ -66,7 +66,7 @@ HttpResponse EspHttpDriver::performGetRequest(
     esp_err_t err = esp_http_client_perform(client);
 
     if (err == ESP_OK) {
-        ESP_LOGI(HTTP_LOG_TAG, "HTTP GET Status = %d, content_length = %"PRId64,
+        ESP_LOGI(HTTP_LOG_TAG, "HTTP GET Status = %d, content_length = %" PRId64,
                 esp_http_client_get_status_code(client),
                 esp_http_client_get_content_length(client));
     } else {
@@ -128,7 +128,7 @@ HttpResponse EspHttpDriver::performPostRequest(
     esp_err_t err = esp_http_client_perform(client);
 
     if (err == ESP_OK) {
-        ESP_LOGI(HTTP_LOG_TAG, "HTTP GET Status = %d, content_length = %"PRId64,
+        ESP_LOGI(HTTP_LOG_TAG, "HTTP GET Status = %d, content_length = %" PRId64,
                 esp_http_client_get_status_code(client),
                 esp_http_client_get_content_length(client));
     } else {
