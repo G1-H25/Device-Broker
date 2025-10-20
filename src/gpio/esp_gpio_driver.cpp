@@ -24,15 +24,14 @@
 /**
  * @brief Set pin mode of given pin.
  *
- * @param pin Pin to configure.
- * @param mode Mode to use.
+ * @param pin pin to configure.
+ * @param mode mode to use.
  *
- * @example docs/examples/gpio_input.cpp
- * @example docs/examples/gpio_output.cpp
+ * @example gpio/gpio_output.cpp
  */
 void gpio::EspGpioDriver::set_pin_mode(PinIndex pin, PinMode mode) noexcept {
     gpio_config_t conf {
-        .pin_bit_mask = pin,
+        .pin_bit_mask = BIT(pin),
     };
 
     gpio_num_t native_pin = static_cast<gpio_num_t>(pin);
@@ -81,7 +80,7 @@ void gpio::EspGpioDriver::digital_write(PinIndex pin, DigitalValue value) noexce
  * @param pin The desired pin to read from. Supports pin 0 to 31.
  * @returns jenlib::gpio::DigitalValue
  *
- * @example docs/examples/gpio_output.cpp
+ * @example gpio/gpio_output.cpp
  */
 jenlib::gpio::DigitalValue gpio::EspGpioDriver::digital_read(PinIndex pin) noexcept {
     return static_cast<DigitalValue>(
@@ -95,7 +94,8 @@ jenlib::gpio::DigitalValue gpio::EspGpioDriver::digital_read(PinIndex pin) noexc
  * @param pin The pin to write a value to. Only supports pin 25 or 26.
  * @param value The strength of the output.
  *
- * @example docs/examples/gpio_output.cpp
+ * @example gpio/gpio_output.cpp
+ * General output example
  */
 void gpio::EspGpioDriver::analog_write(PinIndex pin, std::uint16_t value) noexcept {
     dac_channel_t dac_channel;
@@ -126,7 +126,7 @@ void gpio::EspGpioDriver::analog_write(PinIndex pin, std::uint16_t value) noexce
  * @param pin The pin to read from. Can only read from pins 1 to 20.
  * @return std::uint16_t
  *
- * @example docs/examples/gpio_input.cpp
+ * @example gpio/gpio_input.cpp
  */
 std::uint16_t gpio::EspGpioDriver::analog_read(PinIndex pin) noexcept {
     adc_unit_t adc_unit;
@@ -152,6 +152,8 @@ std::uint16_t gpio::EspGpioDriver::analog_read(PinIndex pin) noexcept {
  * @brief Set analog read resolution.
  *
  * @param bits The desired read resolution
+ *
+ * @example gpio/gpio_input.cpp
  */
 void gpio::EspGpioDriver::set_analog_read_resolution(std::uint8_t bits) noexcept {
     // Configure ADC1 to desired precision. ADC2 width is configured upon reading.
@@ -168,7 +170,7 @@ void gpio::EspGpioDriver::set_analog_read_resolution(std::uint8_t bits) noexcept
  *
  * @param bits
  *
- * @example docs/examples/gpio_input.cpp
+ * @example gpio/gpio_input.cpp
  */
 void gpio::EspGpioDriver::set_analog_write_resolution(std::uint8_t bits) noexcept {
     return;
@@ -183,7 +185,7 @@ std::uint8_t gpio::EspGpioDriver::get_analog_read_resolution() const noexcept {
  *
  * @return std::uint8_t
  *
- * @example docs/examples/gpio_output.cpp
+ * @example gpio/gpio_output.cpp
  */
 std::uint8_t gpio::EspGpioDriver::get_analog_write_resolution() const noexcept {
     return 8;
