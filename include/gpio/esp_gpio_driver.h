@@ -13,6 +13,7 @@
 #define INCLUDE_GPIO_ESP_GPIO_DRIVER_H_
 
 #include <jenlib/gpio/GpioDriver.h>
+#include <driver/adc_types_legacy.h>
 
 namespace gpio {
 
