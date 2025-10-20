@@ -36,6 +36,9 @@ class EspGpioDriver : public jenlib::gpio::GpioDriver {
 
     std::uint8_t get_analog_read_resolution() const noexcept override;
     std::uint8_t get_analog_write_resolution() const noexcept override;
+
+ private:
+    adc_bits_width_t read_resolution;
 };
 
 }  // namespace gpio
