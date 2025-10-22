@@ -9,15 +9,17 @@
  *
  */
 
+#ifdef ESP_PLATFORM
+
 #include <soc/io_mux_reg.h>
 #include <esp32s3/rom/gpio.h>
 #include <driver/gpio.h>
-#include <driver/dac.h>
-#include <driver/adc.h>
+#include <esp_adc/adc_oneshot.h>
 #include <hal/adc_ll.h>
 #include <hal/adc_hal.h>
 #include <hal/dac_types.h>
 #include <esp_adc_cal.h>
+#include <driver/adc.h>
 
 #include "gpio/esp_gpio_driver.h"
 
@@ -30,39 +32,38 @@
  * @example gpio/gpio_output.cpp
  */
 void gpio::EspGpioDriver::set_pin_mode(PinIndex pin, PinMode mode) noexcept {
-    gpio_config_t conf {
-        .pin_bit_mask = BIT(pin),
-    };
-
-    gpio_num_t native_pin = static_cast<gpio_num_t>(pin);
     switch (mode) {
     case PinMode::INPUT:
-        conf.mode = gpio_mode_t::GPIO_MODE_INPUT;
-        conf.pull_down_en = gpio_pulldown_t::GPIO_PULLDOWN_DISABLE;
-        conf.pull_up_en = gpio_pullup_t::GPIO_PULLUP_DISABLE;
-
-        gpio_config(&conf);
+        configure_pin(
+            pin,
+            gpio_mode_t::GPIO_MODE_INPUT,
+            gpio_int_type_t::GPIO_INTR_DISABLE,
+            false,
+            false);
         break;
     case PinMode::INPUT_PULLUP:
-        conf.mode = gpio_mode_t::GPIO_MODE_INPUT;
-        conf.pull_down_en = gpio_pulldown_t::GPIO_PULLDOWN_DISABLE;
-        conf.pull_up_en = gpio_pullup_t::GPIO_PULLUP_ENABLE;
-
-        gpio_config(&conf);
+        configure_pin(
+            pin,
+            gpio_mode_t::GPIO_MODE_INPUT,
+            gpio_int_type_t::GPIO_INTR_DISABLE,
+            false,
+            true);
         break;
     case PinMode::INPUT_PULLDOWN:
-        conf.mode = gpio_mode_t::GPIO_MODE_INPUT;
-        conf.pull_down_en = gpio_pulldown_t::GPIO_PULLDOWN_ENABLE;
-        conf.pull_up_en = gpio_pullup_t::GPIO_PULLUP_DISABLE;
-
-        gpio_config(&conf);
+        configure_pin(
+            pin,
+            gpio_mode_t::GPIO_MODE_INPUT,
+            gpio_int_type_t::GPIO_INTR_DISABLE,
+            true,
+            false);
         break;
     case PinMode::OUTPUT:
-        conf.mode = gpio_mode_t::GPIO_MODE_OUTPUT;
-        conf.pull_down_en = gpio_pulldown_t::GPIO_PULLDOWN_DISABLE;
-        conf.pull_up_en = gpio_pullup_t::GPIO_PULLUP_DISABLE;
-
-        gpio_config(&conf);
+        configure_pin(
+            pin,
+            gpio_mode_t::GPIO_MODE_OUTPUT,
+            gpio_int_type_t::GPIO_INTR_DISABLE,
+            false,
+            false);
         break;
     default:
         break;
@@ -94,6 +95,8 @@ jenlib::gpio::DigitalValue gpio::EspGpioDriver::digital_read(PinIndex pin) noexc
  * @param pin The pin to write a value to. Only supports pin 25 or 26.
  * @param value The strength of the output.
  *
+ * @warning Not implemented fully in the current version
+ *
  * @example gpio/gpio_output.cpp
  * General output example
  */
@@ -109,15 +112,6 @@ void gpio::EspGpioDriver::analog_write(PinIndex pin, std::uint16_t value) noexce
     default:
         return;
     }
-
-    if (value == 0) {
-        dac_output_disable(dac_channel);
-    }
-
-    if (value == 0) {
-        dac_output_enable(dac_channel);
-        dac_output_voltage(dac_channel, value);
-    }
 }
 
 /**
@@ -132,11 +126,11 @@ std::uint16_t gpio::EspGpioDriver::analog_read(PinIndex pin) noexcept {
     adc_unit_t adc_unit;
     adc_channel_t adc_channel;
     if (pin > 0 && pin <= 10)
-        adc_unit == 0;
+        adc_unit = adc_unit_t::ADC_UNIT_1;
     else if (pin > 10 && pin <= 20)
-        adc_unit == 1;
+        adc_unit = adc_unit_t::ADC_UNIT_2;
     else
-        return;
+        return 0;
 
     adc_channel = static_cast<adc_channel_t>((pin % 10) + 1);
 
@@ -144,8 +138,11 @@ std::uint16_t gpio::EspGpioDriver::analog_read(PinIndex pin) noexcept {
         return adc1_get_raw(static_cast<adc1_channel_t>(adc_channel));
     } else if (adc_unit == adc_unit_t::ADC_UNIT_2) {
         int read;
-        adc2_get_raw(static_cast<adc2_channel_t>(adc_channel), this->read_resolution, &read);
+        adc2_get_raw(static_cast<adc2_channel_t>(adc_channel), this->read_resolution_, &read);
+        return read;
     }
+
+    return 0;
 }
 
 /**
@@ -160,7 +157,7 @@ void gpio::EspGpioDriver::set_analog_read_resolution(std::uint8_t bits) noexcept
     esp_err_t err = adc1_config_width(static_cast<adc_bits_width_t>(bits));
     if (err != ESP_OK) return;
 
-    this->read_resolution = static_cast<adc_bits_width_t>(bits);
+    this->read_resolution_ = static_cast<adc_bits_width_t>(bits);
 }
 
 /**
@@ -177,7 +174,7 @@ void gpio::EspGpioDriver::set_analog_write_resolution(std::uint8_t bits) noexcep
 }
 
 std::uint8_t gpio::EspGpioDriver::get_analog_read_resolution() const noexcept {
-    return this->read_resolution;
+    return this->read_resolution_;
 }
 
 /**
@@ -190,3 +187,31 @@ std::uint8_t gpio::EspGpioDriver::get_analog_read_resolution() const noexcept {
 std::uint8_t gpio::EspGpioDriver::get_analog_write_resolution() const noexcept {
     return 8;
 }
+
+/**
+ * @brief Configure a pin with more precision than `set_pin_mode`. Useful if you want to register interrupts to a pin.
+ *
+ * @param pin Pin to configure
+ * @param mode Which mode the pin should be configured for
+ * @param intr_type Which type of interrupt it should trigger
+ * @param enable_pulldown Whether or not pulldown should be enabled
+ * @param enable_pullup Whether or not pulldown should be enabled
+ */
+void gpio::EspGpioDriver::configure_pin(
+        PinIndex pin,
+        gpio_mode_t mode,
+        gpio_int_type_t intr_type,
+        bool enable_pulldown,
+        bool enable_pullup) {
+    gpio_config_t config{
+        .pin_bit_mask = BIT(pin),
+        .mode = mode,
+        .pull_up_en = static_cast<gpio_pullup_t>(enable_pullup),
+        .pull_down_en = static_cast<gpio_pulldown_t>(enable_pulldown),
+        .intr_type = intr_type,
+    };
+
+    gpio_config(&config);
+}
+
+#endif  // ESP_PLATFORM

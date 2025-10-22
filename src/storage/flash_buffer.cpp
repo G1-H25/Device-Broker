@@ -29,7 +29,7 @@ std::mutex FlashBuffer::flash_mtx_{};
  * @param uuid - The unique identifier for the sensor.
  * @param sensor_id - The sensor id is used to store values in the nvs.
  */
-FlashBuffer::FlashBuffer(uuid_t uuid, uint32_t sensor_id) : Storage(uuid), sensor_id_(sensor_id) {
+FlashBuffer::FlashBuffer(storage::sensor_id_t sensor_id) : Storage(sensor_id) {
     std::unique_lock<std::mutex> lock(FlashBuffer::flash_mtx_);
     if (flash_was_init_ == false) {
         if (nvs_flash_init() != ESP_OK) return;
@@ -37,7 +37,7 @@ FlashBuffer::FlashBuffer(uuid_t uuid, uint32_t sensor_id) : Storage(uuid), senso
         nvs_open("registered_sensors", nvs_open_mode_t::NVS_READWRITE, &registered_sensors_handle);
     }
 
-    snprintf(this->storage_name_.data(), this->storage_name_.size(), "%lx", this->sensor_id_);
+    snprintf(this->storage_name_.data(), this->storage_name_.size(), "%x", this->sensor_id);
 
     esp_err_t err = nvs_open(
         this->storage_name_.begin(),
@@ -72,7 +72,12 @@ FlashBuffer::FlashBuffer(uuid_t uuid, uint32_t sensor_id) : Storage(uuid), senso
 
     nvs_release_iterator(iterator);
 
-    nvs_set_blob(registered_sensors_handle, getKeyFromIndex(this->sensor_id_).data(), uuid.data(), uuid.size());
+    nvs_set_blob(
+        registered_sensors_handle,
+        getKeyFromIndex(this->sensor_id).data(),
+        &this->sensor_id,
+        sizeof(this->sensor_id));
+
     nvs_commit(registered_sensors_handle);
 }
 

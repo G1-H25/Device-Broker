@@ -14,6 +14,8 @@
 
 #include <jenlib/gpio/GpioDriver.h>
 #include <driver/adc_types_legacy.h>
+#include <driver/dac_types.h>
+#include <driver/dac_oneshot.h>
 
 namespace gpio {
 
@@ -38,8 +40,17 @@ class EspGpioDriver : public jenlib::gpio::GpioDriver {
     std::uint8_t get_analog_read_resolution() const noexcept override;
     std::uint8_t get_analog_write_resolution() const noexcept override;
 
+    void configure_pin(
+        PinIndex pin,
+        gpio_mode_t mode,
+        gpio_int_type_t intr_type,
+        bool enable_pulldown,
+        bool enable_pullup);
+
  private:
-    adc_bits_width_t read_resolution;
+    adc_bits_width_t read_resolution_;
+    // dac_oneshot_handle_t dac_handle_channel1_;
+    // dac_oneshot_handle_t dac_handle_channel2_;
 };
 
 }  // namespace gpio

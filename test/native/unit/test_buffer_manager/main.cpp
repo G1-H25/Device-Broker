@@ -13,33 +13,35 @@
 #include "storage/buffer_manager.h"
 #include "storage/memory_buffer.h"
 
+constexpr storage::sensor_id_t id = 101;
+
 void test_buffer_manager_create_buffer() {
     storage::BufferManager<storage::MemoryBuffer> buffer;
 
-    TEST_ASSERT_TRUE(buffer.createBuffer({1}));
-    TEST_ASSERT_FALSE(buffer.createBuffer({1}));
+    TEST_ASSERT_TRUE(buffer.createBuffer(id));
+    TEST_ASSERT_FALSE(buffer.createBuffer(id));
 
     storage::MemoryBuffer *entry;
-    TEST_ASSERT_NOT_EQUAL(nullptr, buffer.getBuffer({1}));
+    TEST_ASSERT_NOT_EQUAL(nullptr, buffer.getBuffer(id));
 }
 
 void test_buffer_manager_remove_buffer() {
     storage::BufferManager<storage::MemoryBuffer> buffer;
     storage::MemoryBuffer *entry;
 
-    TEST_ASSERT_FALSE(buffer.removeBuffer({1}));
-    TEST_ASSERT_TRUE(buffer.createBuffer({1}));
-    TEST_ASSERT_TRUE(buffer.removeBuffer({1}));
+    TEST_ASSERT_FALSE(buffer.removeBuffer(id));
+    TEST_ASSERT_TRUE(buffer.createBuffer(id));
+    TEST_ASSERT_TRUE(buffer.removeBuffer(id));
 
-    TEST_ASSERT_EQUAL(nullptr, buffer.getBuffer({1}));
+    TEST_ASSERT_EQUAL(nullptr, buffer.getBuffer(id));
 }
 
 void test_buffer_manager_get_buffer() {
     storage::BufferManager<storage::MemoryBuffer> buffer;
     storage::MemoryBuffer *entry;
 
-    TEST_ASSERT_TRUE(buffer.createBuffer({1}));
-    TEST_ASSERT_NOT_EQUAL(nullptr, buffer.getBuffer({1}));
+    TEST_ASSERT_TRUE(buffer.createBuffer(id));
+    TEST_ASSERT_NOT_EQUAL(nullptr, buffer.getBuffer(id));
 }
 
 

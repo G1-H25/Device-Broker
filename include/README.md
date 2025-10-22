@@ -15,12 +15,21 @@ These files contains the following information:
 // This does not represent actual endpoints but are just examples.
 //
 // This is most likely incomplete and will need to be updated continuously
-#define HTTP_API_HOST "localhost"  // Host
-#define HTTP_API_PORT 5000 // Port for URL
-#define HTTP_API_ENDPOINT_ADD_MEASUREMENT(id) "/api/package/addEntry"  // POST
-#define HTTP_API_ENDPOINT_ADD_MULTIPLE_MEASUREMENTS "/api/package/addEntries"  // POST
-#define HTTP_API_ENDPOINT_GET_PACKAGE_ID "/api/package"  // GET
-#define HTTP_API_ENDPOINT_GET_TIME "/api/time"  // GET
+#ifndef SECRETS_H_
+#define SECRETS_H_
+
+#define HTTP_API_HOST               "192.168.8.169"
+#define HTTP_API_PORT               5000
+
+#define HTTP_API_HEALTH_ENDPOINT    "/Health"
+#define HTTP_API_POST_MEASUREMENT   "/Post"
+#define HTTP_API_SYNC_SENSORS       "/GetSensors"
+
+#define HTTP_API_JSON_TEMP_KEY      "temp"
+#define HTTP_API_JSON_HUM_KEY       "hum"
+#define HTTP_API_JSON_TIME_KEY      "time"
+
+#endif
 ```
 
 When building on github actions these must be defined when compiling the program otherwise build will fail.

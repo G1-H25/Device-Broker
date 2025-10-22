@@ -17,8 +17,8 @@ uint8_t Storage::getBufferSize() const {
     return this->buffer_size_;
 }
 
-const uuid_t Storage::getUUID() {
-    return this->uuid_;
+const sensor_id_t Storage::getUUID() {
+    return this->sensor_id;
 }
 
 bool Storage::hasData() {
@@ -30,5 +30,3 @@ size_t Storage::available() {
 }
 
 }  // namespace storage
-
-

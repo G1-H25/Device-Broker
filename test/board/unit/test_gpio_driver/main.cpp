@@ -10,6 +10,7 @@
 
 #include <unity.h>
 #include <esp_vfs.h>
+#include <driver/gpio.h>
 #include "gpio/esp_gpio_driver.h"
 
 void test_pin_input() {
