@@ -24,6 +24,8 @@ class MemoryBuffer : public Storage {
     bool tryPop(MeasurementEntry &out) override;
 
     bool getLatestMeasurement(MeasurementEntry &out) override;
+    bool getMeasurement(MeasurementEntry &out, size_t index) override;
+
 
     void clearAll() override;
  private:

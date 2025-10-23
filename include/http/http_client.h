@@ -9,8 +9,11 @@
  *
  */
 
+
 #ifndef INCLUDE_HTTP_HTTP_CLIENT_H_
 #define INCLUDE_HTTP_HTTP_CLIENT_H_
+
+#ifdef ESP_PLATFORM
 
 #define HTTP_RESPONSE_BUFFER_SIZE 1024
 
@@ -45,4 +48,5 @@ class HttpClient {
 
 }  // namespace http
 
+#endif  // ESP_PLATFORM
 #endif  // INCLUDE_HTTP_HTTP_CLIENT_H_

@@ -8,25 +8,23 @@
  * @copyright Copyright (c) 2025
 */
 
-#ifndef UNIT_TEST
-
-#include <esp32s3/rom/gpio.h>
-#include <esp_rom_gpio.h>
-#include <soc/io_mux_reg.h>
 #include <esp_log.h>
 #include <driver/gpio.h>
-#include <string_view>
-#include <string>
-#include <vector>
-#include <ArduinoJson.h>
+#include <sntp.h>
+#include <esp_sntp.h>
+#include <esp_netif_sntp.h>
+#include <mbedtls/base64.h>
 #include "http/http_client.h"
 #include "http/http_driver.h"
 #include "http/http_esp_client_driver.h"
+#include "http/sensor_data_sender.h"
+#include "wifi/wifi_client.h"
 #include "storage/buffer_manager.h"
 #include "storage/flash_buffer.h"
 #include "gpio/esp_gpio_driver.h"
 #include "gpio/button.h"
 #include "secrets/routes.h"
+#include "secrets/credentials.h"
 
 #define IO_MUX_BASE_ADDR 0x60009000
 
@@ -43,121 +41,123 @@ using jenlib::events::EventType;
 using storage::BufferManager;
 using storage::FlashBuffer;
 
-/**
- * @brief Get the Sensor UUIDs from backend server
- *
- * @returns A json document with containing
- * all uuids that are registered to the broker.
- */
-JsonDocument getSensorUUIDs() {
-    http::http_response_t resp = http::HttpClient::getDriver()->
-        performGetRequest(
-            HTTP_API_HOST,
-            HTTP_API_PORT,
-            HTTP_API_SYNC_SENSORS,
-            true);
+#define TAG "NTP"
 
-    JsonDocument document;
-    if (resp.status != 200) return document;
+// void createMockSensor(FlashBuffer buffer, storage::sensor_id_t uuid) {
+//     int period_ms = 1000;
+//     TimeOut_t timeout;
+//     TickType_t period_tick = pdMS_TO_TICKS(period_ms);
+//     vTaskSetTimeOutState(&timeout);
 
-    convertToJson(resp.data, document);
-    return document;
-}
+//     for (;;) {
+//         if (xTaskCheckForTimeOut(&timeout, &period_tick) != pdFALSE) {
+//             vTaskSetTimeOutState(&timeout);
+//             period_tick = pdMS_TO_TICKS(period_ms);
 
-/**
- * @brief Converts a stored buffer into a JsonArray.
- *
- * @param buffers A reference to a buffermanager containing all available buffers
- * @param sensor_id_t The sensor to convert buffered values into json.
- * @returns A JsonArray containing all buffered data.
- */
-JsonArray bufferToJson(const storage::BufferManager<storage::FlashBuffer> &buffers, storage::sensor_id_t sensor_id) {
-    JsonArray document;
-    JsonObject obj;
+//             uint32_t t;
+//             buffer.pushMeasurement({
+//                 static_cast<uint32_t>(time(nullptr)),
+//                 static_cast<uint16_t>((esp_random() % 20) + 5),
+//                 static_cast<uint16_t>(esp_random() % 100)});
+//         }
+//     }
+// }
 
-    FlashBuffer *buffer = buffers.getBuffer(sensor_id);
+extern "C" void app_main() {
+    wifi::WiFiClient client{WIFI_SSID, WIFI_PASSWORD};
+    client.connect();
 
-    for (int i = 0; i < buffer->available(); i++) {
-        storage::MeasurementEntry entry;
+    while (client.getStatus() != wifi::CONNECTED) {}
+    vTaskDelay(pdMS_TO_TICKS(2000));
 
-        if (!buffer->loadMeasurement(i, entry))
-            continue;
-
-        obj[HTTP_API_JSON_TIME_KEY] = entry.timestamp;
-        obj[HTTP_API_JSON_TEMP_KEY] = entry.temperature;
-        obj[HTTP_API_JSON_HUM_KEY] = entry.humidity;
-
-        document.add(obj);
-    }
-}
-
-/**
- * @brief Iterates and sends all buffered sensor data.
- *
- * @param buffers Buffer manager where all buffers are stored.
- * @returns A vector containing all failed sensor uuids that could not be sent.
- */
-template<typename T>
-std::vector<storage::sensor_id_t> sendAllBuffers(storage::BufferManager<T> &buffers) {
-    static_assert(std::is_base_of<storage::Storage, T>(), "T does not derive from storage::Storage class");
-
-    JsonDocument document;
-    JsonArray temp;
-    std::vector<storage::sensor_id_t> failed;
-
-    for (storage::sensor_id_t i : buffers.getBufferUUIDs()) {
-        document[i] = bufferToJson(buffers, i);
-
-        std::string payload;
-        convertFromJson(document, payload);
-
-        http::http_response_t resp = http::HttpClient::getDriver()->
-            performPostRequest(
-                HTTP_API_HOST,
-                HTTP_API_PORT,
-                HTTP_API_POST_MEASUREMENT,
-                {.data = payload, .is_json = true});
-
-        document.clear();
-        if (resp.status == 201) {
-            buffers.clearBuffer(i);
-        } else {
-            failed.push_back(i);
-        }
-    }
-
-    return failed;
-}
-
-void createMockSensor(FlashBuffer buffer, storage::sensor_id_t uuid) {
-    int period_ms = 1000;
-    TimeOut_t timeout;
-    TickType_t period_tick = pdMS_TO_TICKS(period_ms);
-    vTaskSetTimeOutState(&timeout);
-
-    for (;;) {
-        if (xTaskCheckForTimeOut(&timeout, &period_tick) != pdFALSE) {
-            vTaskSetTimeOutState(&timeout);
-            period_tick = pdMS_TO_TICKS(period_ms);
-
-            uint32_t t;
-            buffer.pushMeasurement({
-                static_cast<uint32_t>(time(nullptr)),
-                static_cast<uint16_t>((esp_random() % 20) + 5),
-                static_cast<uint16_t>(esp_random() % 100)});
-        }
-    }
-}
-
-void app_main() {
     gpio::EspGpioDriver driver;
     http::HttpClient::setDriver(new http::EspHttpDriver{});
 
-    gpio::Button button {1, [](const Event &event) {
-        std::vector<storage::sensor_id_t> uuids;
-    }};
+    storage::BufferManager<storage::FlashBuffer> buffers;
 
-    delete http::HttpClient::getDriver();
+    // gpio::Button button {1, [](const Event &event) {
+    //     std::vector<storage::sensor_id_t> uuids;
+    // }};
+
+        // init NVS + TCP/IP stack (assume Wi‑Fi already connected)
+    // esp_err_t r = nvs_flash_init();
+    // if (r == ESP_ERR_NVS_NO_FREE_PAGES || r == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+    //     nvs_flash_erase();
+    //     nvs_flash_init();
+    // }
+    // esp_netif_init();
+    // esp_event_loop_create_default();
+
+    // // optional: set timezone (UTC here)
+    // setenv("TZ", "UTC2", 1);
+    // tzset();
+
+    // // init SNTP
+    // sntp_setoperatingmode(SNTP_OPMODE_POLL);
+    // sntp_setservername(0, "pool.ntp.org"); // or "time.google.com"
+    // sntp_init();
+
+    // // wait for sync (simple loop)
+    time_t now = 0;
+    // struct tm tm = {0};
+    // int retries = 0;
+    // while (tm.tm_year < (2020 - 1900) && retries++ < 10) {
+    //     vTaskDelay(pdMS_TO_TICKS(1000));
+    //     time(&now);
+    //     localtime_r(&now, &tm);
+    // }
+
+    // if (tm.tm_year >= (2020 - 1900)) {
+    //     char buf[64];
+    //     strftime(buf, sizeof(buf), "%c", &tm);
+    //     ESP_LOGI(TAG, "Time synced: %s", buf);
+    // } else {
+    //     ESP_LOGW(TAG, "SNTP sync failed");
+    // }
+
+    buffers.createBuffer(0);
+
+    // Skapa buffer värden loop
+    while (1) {
+        // ESP_LOGI(http::HttpResponse::status);
+        time(&now);
+        // localtime_r(&now, &tm);
+
+        storage::Storage *buffer = buffers.getBuffer(0);
+        for (int i = 0; i < 10; i++) {
+            buffer->pushMeasurement({
+                now,
+                static_cast<uint16_t>((esp_random() % 20) + 5),
+                static_cast<uint16_t>((esp_random() % 100))
+            });
+        }
+
+        JsonDocument payload;
+        payload["batch_id"] = 0;
+        payload["generated_at"] = now;
+        payload["sensors    "] = http::bufferToJson(buffer);
+
+        http::HttpResponse resp = http::HttpClient::getDriver()->performGetRequest(
+            HTTP_TEST_API_HOST,
+            HTTP_TEST_API_PORT,
+            "/");
+
+        // http::HttpResponse resp = http::HttpClient::getDriver()->performPostRequest(
+        //     HTTP_TEST_API_HOST,
+        //     HTTP_TEST_API_PORT,
+        //     HTTP_API_SUBMIT_BATCH,
+        //     {
+        //         .data = "",
+        //         .headers = {
+        //             {
+        //                 "Content-Type", "application/json"
+        //             }
+        //         }
+        //     }
+        // );
+
+        ESP_LOGI("__STATUS__", "%i", resp.status);
+
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
 }
-
-#endif

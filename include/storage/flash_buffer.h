@@ -34,7 +34,8 @@ class FlashBuffer : public Storage {
     bool tryPop(MeasurementEntry &out) override;
 
     bool getLatestMeasurement(MeasurementEntry &out) override;
-    bool loadMeasurement(size_t index, MeasurementEntry &out);
+    bool getMeasurement(MeasurementEntry &out, size_t index) override;
+
 
     void clearAll() override;
 

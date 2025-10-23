@@ -14,6 +14,7 @@
 
 #include <jenlib/gpio/GPIO.h>
 #include <jenlib/events/EventTypes.h>
+#include <jenlib/events/EventDispatcher.h>
 #include "gpio/esp_gpio_driver.h"
 
 namespace gpio {

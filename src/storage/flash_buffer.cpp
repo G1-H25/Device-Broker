@@ -138,10 +138,11 @@ bool FlashBuffer::getLatestMeasurement(MeasurementEntry &out) {
 /**
  * @brief Load a measurement from the flash memory
  *
+ * @param out When successfull the request value is stored here.
  * @param index The index of the measurement which will be retrieved
  * @returns `MeasurementEntry *` or a `nullptr` if failed
  */
-bool FlashBuffer::loadMeasurement(size_t index, MeasurementEntry &out) {
+bool FlashBuffer::getMeasurement(MeasurementEntry &out, size_t index) {
     if (!this->flash_was_init_ || index >= this->available()) return false;
 
     nvs_key_t temp_str;
@@ -159,6 +160,12 @@ bool FlashBuffer::loadMeasurement(size_t index, MeasurementEntry &out) {
     return res == ESP_OK;
 }
 
+/**
+ * @brief Convert an index to a nvs_key_t.
+ *
+ * @param index The index to convert.
+ * @return constexpr nvs_key_t
+ */
 constexpr nvs_key_t FlashBuffer::getKeyFromIndex(size_t index) {
     nvs_key_t temp_str{ 0 };
     snprintf(temp_str.begin(), temp_str.size(), "%x", index);
@@ -175,6 +182,11 @@ void FlashBuffer::clearAll() {
     nvs_commit(this->nvs_handle_);
 }
 
+/**
+ * @brief Try to initialize NVS.
+ *
+ * @returns True if successful, false otherwise.
+ */
 bool FlashBuffer::tryInitNVS() {
     if (FlashBuffer::flash_was_init_) return false;
 

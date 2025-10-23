@@ -21,7 +21,7 @@
 
 namespace storage {
 
-template <typename T>
+template <class T>
 class BufferManager {
     static_assert(std::is_base_of<Storage, T>(), "T must be derived of class Storage");
 

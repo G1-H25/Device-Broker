@@ -13,7 +13,10 @@
 #include <esp_timer.h>
 #include <esp_log.h>
 
+#include <string>
+
 #include "http/http_client.h"
+#include "http/sensor_data_sender.h"
 #include "http/http_response.h"
 #include "http/http_esp_client_driver.h"
 #include "wifi/wifi_client.h"
@@ -33,10 +36,25 @@ void test_http_client_get() {
 
 void test_http_client_post() {
     HttpResponse response = HttpClient::getDriver()->performPostRequest(
-        HTTP_API_HOST, HTTP_API_PORT, HTTP_API_HEALTH_ENDPOINT, {}, false);
+        HTTP_API_HOST, HTTP_API_PORT, HTTP_API_HEALTH_ENDPOINT,
+        {.headers = {{"Content-Type", "application/json"}}}, false);
     TEST_ASSERT_EQUAL(405, response.status);  // using current value to test if get works
 
     ESP_LOGI("HTTP_POST_DATA", "%s", response.data.begin());
+}
+
+void test_http_client_send_batch() {
+    std::string str;
+
+    HttpRequest req{
+        .data = str.c_str(),
+        .headers = {
+            {"Content-Type", "application/json"},
+        }
+    };
+
+    HttpResponse response = HttpClient::getDriver()->performPostRequest(
+        HTTP_TEST_API_HOST, HTTP_TEST_API_PORT, HTTP_API_SUBMIT_BATCH, req, true);
 }
 
 extern "C" void app_main() {

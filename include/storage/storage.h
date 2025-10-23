@@ -13,6 +13,7 @@
 
 #include <cstdint>
 #include <array>
+#include <ctime>
 
 #define BUFFER_SIZE_PER_SENSOR 32
 
@@ -22,7 +23,7 @@ namespace storage {
 typedef uint16_t sensor_id_t;
 
 typedef struct measurement_entry_t {
-    uint32_t timestamp;
+    time_t timestamp;
     uint16_t temperature;
     uint16_t humidity;
 } MeasurementEntry;
@@ -37,8 +38,9 @@ class Storage {
     bool hasData();
 
     virtual uint8_t getBufferSize() const;
-    virtual const sensor_id_t getUUID();
+    virtual sensor_id_t getSensorId();
     virtual bool getLatestMeasurement(MeasurementEntry &out) = 0;
+    virtual bool getMeasurement(MeasurementEntry &out, size_t index) = 0;
 
     virtual void clearAll() = 0;
 

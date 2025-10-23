@@ -83,36 +83,36 @@ void test_sensor_buffer_data_integrity() {
     TEST_ASSERT_EQUAL(uuid, buffer.getUUID());
 
     MeasurementEntry entry;
-    TEST_ASSERT_TRUE(buffer.loadMeasurement(0, entry));
-    TEST_ASSERT_TRUE(buffer.loadMeasurement(1, entry));
+    TEST_ASSERT_TRUE(buffer.getMeasurement(entry, 0));
+    TEST_ASSERT_TRUE(buffer.getMeasurement(entry, 1));
 
-    TEST_ASSERT_FALSE(buffer.loadMeasurement(10, entry));
-    TEST_ASSERT_FALSE(buffer.loadMeasurement(-1, entry));
+    TEST_ASSERT_FALSE(buffer.getMeasurement(entry, 10));
+    TEST_ASSERT_FALSE(buffer.getMeasurement(entry, -1));
 
-    buffer.loadMeasurement(0, entry);
+    buffer.getMeasurement(entry, 0);
     TEST_ASSERT_EQUAL(current_time, entry.timestamp);
     TEST_ASSERT_EQUAL(temperature, entry.temperature);
     TEST_ASSERT_EQUAL(humidity, entry.humidity);
 
-    buffer.loadMeasurement(1, entry);
+    buffer.getMeasurement(entry, 1);
     TEST_ASSERT_EQUAL(current_time + 10, entry.timestamp);
     TEST_ASSERT_EQUAL(temperature + 10, entry.temperature);
     TEST_ASSERT_EQUAL(humidity + 10, entry.humidity);
 
     TEST_ASSERT_EQUAL(uuid2, buffer2.getUUID());
 
-    TEST_ASSERT_TRUE(buffer2.loadMeasurement(0, entry));
-    TEST_ASSERT_TRUE(buffer2.loadMeasurement(1, entry));
+    TEST_ASSERT_TRUE(buffer2.getMeasurement(entry, 0));
+    TEST_ASSERT_TRUE(buffer2.getMeasurement(entry, 1));
 
-    TEST_ASSERT_FALSE(buffer2.loadMeasurement(10, entry));
-    TEST_ASSERT_FALSE(buffer2.loadMeasurement(-1, entry));
+    TEST_ASSERT_FALSE(buffer2.getMeasurement(entry, 10));
+    TEST_ASSERT_FALSE(buffer2.getMeasurement(entry, -1));
 
-    buffer2.loadMeasurement(0, entry);
+    buffer2.getMeasurement(entry, 0);
     TEST_ASSERT_EQUAL(current_time + 25, entry.timestamp);
     TEST_ASSERT_EQUAL(temperature + 25, entry.temperature);
     TEST_ASSERT_EQUAL(humidity + 25, entry.humidity);
 
-    buffer2.loadMeasurement(1, entry);
+    buffer2.getMeasurement(entry, 1);
     TEST_ASSERT_EQUAL(current_time + 15, entry.timestamp);
     TEST_ASSERT_EQUAL(temperature + 15, entry.temperature);
     TEST_ASSERT_EQUAL(humidity + 15, entry.humidity);

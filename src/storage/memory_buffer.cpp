@@ -37,6 +37,21 @@ bool MemoryBuffer::pushMeasurement(const MeasurementEntry &measurement) {
 }
 
 /**
+ * @brief Get a measurement from index in no particular order. Index gets a
+ * value based on the first position of the buffer not the oldest element.
+ *
+ * @param out [out] The stored value out variable
+ * @param index Which element to get from the beginning of the buffer.
+ * @returns true if index is valid and out has been changed, otherwise false.
+ */
+bool MemoryBuffer::getMeasurement(MeasurementEntry &out, size_t index) {
+    if (index > this->entry_count_ || index < 0) return false;
+
+    out = this->entries_[index];
+    return true;
+}
+
+/**
  * @brief Pop a value from memory.
  *
  * @returns True if success, false otherwise

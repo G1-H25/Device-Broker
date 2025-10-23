@@ -74,10 +74,12 @@ HttpResponse EspHttpDriver::performGetRequest(
     }
     ESP_LOG_BUFFER_HEX(HTTP_LOG_TAG, response_buffer, strlen(response_buffer));
 
+    int status = esp_http_client_get_status_code(client);
+
     esp_http_client_cleanup(client);
 
     return HttpResponse {
-        .status = esp_http_client_get_status_code(client),
+        .status = status,
         .data = response_buffer,
     };
 }
@@ -102,6 +104,8 @@ HttpResponse EspHttpDriver::performPostRequest(
     *config_ = {
         .host = host.begin(),
         .port = port,
+        .username = "admin",
+        .password = "123",
         .path = endpoint.begin(),
         .disable_auto_redirect = true,
         .event_handler = event_handler,
@@ -119,11 +123,15 @@ HttpResponse EspHttpDriver::performPostRequest(
     esp_http_client_handle_t client;
     client = esp_http_client_init(config_);
 
-    esp_http_client_set_header(client, "Content-Type",
-        req.is_json ? "application/json" : "application/text");
-
     esp_http_client_set_method(client, HTTP_METHOD_POST);
     esp_http_client_set_post_field(client, req.data.begin(), req.data.size());
+
+    for (auto i : req.headers) {
+        esp_http_client_set_header(client, i.name.begin(), i.value.begin());
+    }
+
+    esp_http_client_add_auth(client);
+    esp_http_client_set_authtype(client, HTTP_AUTH_TYPE_BASIC);
 
     esp_err_t err = esp_http_client_perform(client);
 
@@ -136,10 +144,12 @@ HttpResponse EspHttpDriver::performPostRequest(
     }
     ESP_LOG_BUFFER_HEX(HTTP_LOG_TAG, response_buffer, strlen(response_buffer));
 
+    int status = esp_http_client_get_status_code(client);
+
     esp_http_client_cleanup(client);
 
     return HttpResponse {
-        .status = esp_http_client_get_status_code(client),
+        .status = status,
         .data = response_buffer,
     };
 }
