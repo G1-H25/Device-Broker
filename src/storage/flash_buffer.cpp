@@ -10,12 +10,14 @@
 
 #ifdef ESP_PLATFORM
 
-#include "storage/flash_buffer.h"
 #include <memory.h>
 
 #include <nvs_flash.h>
 #include <esp_flash.h>
 #include <cstdio>
+
+#include "http/sensor_data_sender.h"
+#include "storage/flash_buffer.h"
 
 namespace storage {
 
@@ -29,7 +31,7 @@ std::mutex FlashBuffer::flash_mtx_{};
  * @param uuid - The unique identifier for the sensor.
  * @param sensor_id - The sensor id is used to store values in the nvs.
  */
-FlashBuffer::FlashBuffer(storage::sensor_id_t sensor_id) : Storage(sensor_id) {
+FlashBuffer::FlashBuffer(storage::uuid_t uuid, storage::sensor_id_t sensor_id) : Storage(uuid, sensor_id) {
     std::unique_lock<std::mutex> lock(FlashBuffer::flash_mtx_);
     if (flash_was_init_ == false) {
         if (nvs_flash_init() != ESP_OK) return;
@@ -37,7 +39,7 @@ FlashBuffer::FlashBuffer(storage::sensor_id_t sensor_id) : Storage(sensor_id) {
         nvs_open("registered_sensors", nvs_open_mode_t::NVS_READWRITE, &registered_sensors_handle);
     }
 
-    snprintf(this->storage_name_.data(), this->storage_name_.size(), "%x", this->sensor_id);
+    snprintf(this->storage_name_.data(), this->storage_name_.size(), "%x", sensor_id);
 
     esp_err_t err = nvs_open(
         this->storage_name_.begin(),

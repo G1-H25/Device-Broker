@@ -12,6 +12,7 @@
 #include <type_traits>
 #include <vector>
 #include <string>
+#include <cstdio>
 
 #include "http/sensor_data_sender.h"
 #include "secrets/routes.h"
@@ -38,13 +39,13 @@ JsonDocument getSensorUUIDs() {
 }
 
 template<typename T>
-std::vector<storage::sensor_id_t> sendAllBuffers(storage::BufferManager<T> &buffers) {
+std::vector<storage::uuid_t> sendAllBuffers(storage::BufferManager<T> &buffers) {
     JsonDocument document;
     JsonArray temp;
-    std::vector<storage::sensor_id_t> failed;
+    std::vector<storage::uuid_t> failed;
 
-    for (storage::sensor_id_t i : buffers.getBufferUUIDs()) {
-        document[i] = bufferToJson(buffers.getBuffer(i));
+    for (storage::uuid_t i : buffers.getBufferUUIDs()) {
+        document["sensors"].add(bufferToJson(buffers.getBuffer(i)));
 
         std::string payload;
         convertFromJson(document, payload);
@@ -73,11 +74,25 @@ std::vector<storage::sensor_id_t> sendAllBuffers(storage::BufferManager<T> &buff
 
 namespace http {
 
+std::string_view uuidToString(const storage::uuid_t &sensor_id) {
+    constexpr uint8_t bufferSize = 37;
+    char buffer[bufferSize] = { 0 };
+
+    snprintf(buffer, bufferSize,
+        "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+        sensor_id[0], sensor_id[1], sensor_id[2], sensor_id[3], sensor_id[4],
+        sensor_id[5], sensor_id[6], sensor_id[7], sensor_id[8], sensor_id[9],
+        sensor_id[10], sensor_id[11], sensor_id[12], sensor_id[13],
+        sensor_id[14], sensor_id[15]);
+
+    return buffer;
+}
+
 JsonDocument bufferToJson(storage::Storage *buffer) {
     JsonDocument document;
     JsonDocument obj;
 
-    document["sensor_id"] = buffer->getSensorId();
+    document["sensor_id"] = 10;
 
     for (int i = 0; i < buffer->available(); i++) {
         storage::MeasurementEntry entry;

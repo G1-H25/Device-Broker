@@ -13,10 +13,11 @@
 #define INCLUDE_HTTP_SENSOR_DATA_SENDER_H_
 
 #include <ArduinoJson.h>
-#include <storage/storage.h>
 
 #include <vector>
+#include <string_view>
 
+#include "storage/storage.h"
 #include "storage/buffer_manager.h"
 
 namespace http {
@@ -33,7 +34,7 @@ JsonDocument getSensorUUIDs();
  * @brief Converts a stored buffer into a JsonArray.
  *
  * @param buffers A reference to a buffermanager containing all available buffers
- * @param sensor_id_t The sensor to convert buffered values into json.
+ * @param uuid_t The sensor to convert buffered values into json.
  * @returns A JsonArray containing all buffered data.
  *
  * The keys below are defined in secrets/routes.h
@@ -52,13 +53,21 @@ JsonDocument getSensorUUIDs();
 JsonDocument bufferToJson(storage::Storage *buffer);
 
 /**
+ * @brief
+ *
+ * @param sensor_id
+ * @return std::string_view
+ */
+std::string_view uuidToString(const storage::uuid_t &sensor_id);
+
+/**
  * @brief Iterates and sends all buffered sensor data.
  *
  * @param buffers Buffer manager where all buffers are stored.
  * @returns A vector containing all failed sensor uuids that could not be sent.
  */
 template<typename T>
-std::vector<storage::sensor_id_t> sendAllBuffers(storage::BufferManager<T> &buffers);
+std::vector<storage::uuid_t> sendAllBuffers(storage::BufferManager<T> &buffers);
 
 }  // namespace http
 

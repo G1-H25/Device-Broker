@@ -26,30 +26,30 @@ class BufferManager {
     static_assert(std::is_base_of<Storage, T>(), "T must be derived of class Storage");
 
  public:
-    bool createBuffer(const sensor_id_t uuid);
-    bool removeBuffer(const sensor_id_t uuid);
-    T *getBuffer(const sensor_id_t uuid);
+    bool createBuffer(const uuid_t &uuid, sensor_id_t sensor_id);
+    bool removeBuffer(const uuid_t uuid);
+    T *getBuffer(const uuid_t uuid);
 
-    std::vector<sensor_id_t> getBufferUUIDs() const;
+    std::vector<uuid_t> getBufferUUIDs() const;
 
     void clear();
-    void clearBuffer(const sensor_id_t uuid);
+    void clearBuffer(const uuid_t uuid);
 
  private:
-    std::map<sensor_id_t, T> buffers_;
+    std::map<uuid_t, T> buffers_;
 };
 
 template <typename T>
-bool BufferManager<T>::createBuffer(const sensor_id_t uuid) {
+bool BufferManager<T>::createBuffer(const uuid_t &uuid, sensor_id_t sensor_id) {
     // T t{uuid};
     if (this->buffers_.contains(uuid)) return false;
 
-    this->buffers_.insert({uuid, T{uuid}});
+    this->buffers_.insert({uuid, T{uuid, sensor_id}});
     return true;
 }
 
 template <typename T>
-bool BufferManager<T>::removeBuffer(const sensor_id_t uuid) {
+bool BufferManager<T>::removeBuffer(const uuid_t uuid) {
     bool has_value = this->buffers_.contains(uuid);
 
     if (has_value)
@@ -59,7 +59,7 @@ bool BufferManager<T>::removeBuffer(const sensor_id_t uuid) {
 }
 
 template <typename T>
-T *BufferManager<T>::getBuffer(const sensor_id_t uuid) {
+T *BufferManager<T>::getBuffer(const uuid_t uuid) {
     if (this->buffers_.contains(uuid))
         return &this->buffers_.at(uuid);
     return nullptr;
@@ -71,8 +71,8 @@ void BufferManager<T>::clear() {
 }
 
 template <typename T>
-std::vector<sensor_id_t> BufferManager<T>::getBufferUUIDs() const {
-    std::vector<sensor_id_t> vec;
+std::vector<uuid_t> BufferManager<T>::getBufferUUIDs() const {
+    std::vector<uuid_t> vec;
     vec.reserve(this->buffers_.size());
 
     for (auto it = this->buffers_.begin(); it != this->buffers_.end(); it++) {
@@ -83,7 +83,7 @@ std::vector<sensor_id_t> BufferManager<T>::getBufferUUIDs() const {
 }
 
 template <typename T>
-void BufferManager<T>::clearBuffer(const sensor_id_t uuid) {
+void BufferManager<T>::clearBuffer(const uuid_t uuid) {
     if (this->buffers_.contains(uuid))
         this->buffers_.at(uuid).clearAll();
 }

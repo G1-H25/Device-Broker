@@ -14,6 +14,7 @@
 #include <esp_sntp.h>
 #include <esp_netif_sntp.h>
 #include <mbedtls/base64.h>
+#include <string>
 #include "http/http_client.h"
 #include "http/http_driver.h"
 #include "http/http_esp_client_driver.h"
@@ -41,9 +42,11 @@ using jenlib::events::EventType;
 using storage::BufferManager;
 using storage::FlashBuffer;
 
+#define CONFIG_EXAMPLE_ENABLE_RESPONSE_BUFFER_DUMP 1
+
 #define TAG "NTP"
 
-// void createMockSensor(FlashBuffer buffer, storage::sensor_id_t uuid) {
+// void createMockSensor(FlashBuffer buffer, storage::uuid_t uuid) {
 //     int period_ms = 1000;
 //     TimeOut_t timeout;
 //     TickType_t period_tick = pdMS_TO_TICKS(period_ms);
@@ -76,7 +79,7 @@ extern "C" void app_main() {
     storage::BufferManager<storage::FlashBuffer> buffers;
 
     // gpio::Button button {1, [](const Event &event) {
-    //     std::vector<storage::sensor_id_t> uuids;
+    //     std::vector<storage::uuid_t> uuids;
     // }};
 
         // init NVS + TCP/IP stack (assume Wi‑Fi already connected)
@@ -115,7 +118,7 @@ extern "C" void app_main() {
     //     ESP_LOGW(TAG, "SNTP sync failed");
     // }
 
-    buffers.createBuffer(0);
+    buffers.createBuffer({0}, 0);
 
     // Skapa buffer värden loop
     while (1) {
@@ -123,7 +126,7 @@ extern "C" void app_main() {
         time(&now);
         // localtime_r(&now, &tm);
 
-        storage::Storage *buffer = buffers.getBuffer(0);
+        storage::Storage *buffer = buffers.getBuffer({0});
         for (int i = 0; i < 10; i++) {
             buffer->pushMeasurement({
                 now,
@@ -133,31 +136,36 @@ extern "C" void app_main() {
         }
 
         JsonDocument payload;
-        payload["batch_id"] = 0;
+        payload["batch_id"] = "asdf";
         payload["generated_at"] = now;
-        payload["sensors    "] = http::bufferToJson(buffer);
+        payload["sensors"].add(http::bufferToJson(buffer));
 
-        http::HttpResponse resp = http::HttpClient::getDriver()->performGetRequest(
-            HTTP_TEST_API_HOST,
-            HTTP_TEST_API_PORT,
-            "/");
 
-        // http::HttpResponse resp = http::HttpClient::getDriver()->performPostRequest(
+        std::string data;
+        convertFromJson(payload, data);
+        ESP_LOGI("__JSON__", "%s", data.c_str());
+
+        // http::HttpResponse resp = http::HttpClient::getDriver()->performGetRequest(
         //     HTTP_TEST_API_HOST,
         //     HTTP_TEST_API_PORT,
-        //     HTTP_API_SUBMIT_BATCH,
-        //     {
-        //         .data = "",
-        //         .headers = {
-        //             {
-        //                 "Content-Type", "application/json"
-        //             }
-        //         }
-        //     }
-        // );
+        // "/");
+
+        http::HttpResponse resp = http::HttpClient::getDriver()->performPostRequest(
+            HTTP_TEST_API_HOST,
+            HTTP_TEST_API_PORT,
+            HTTP_API_SUBMIT_BATCH,
+            {
+                .data = data,
+                .headers = {
+                    {
+                        "Content-Type", "application/json"
+                    }
+                }
+            });
 
         ESP_LOGI("__STATUS__", "%i", resp.status);
+        ESP_LOGI("__DATA__", "%s", resp.data.begin());
 
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        vTaskDelay(pdMS_TO_TICKS(2000));
     }
 }

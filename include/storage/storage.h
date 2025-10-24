@@ -19,7 +19,7 @@
 
 namespace storage {
 
-// typedef std::array<uint8_t, 16> uuid_t;
+typedef std::array<uint8_t, 16> uuid_t;
 typedef uint16_t sensor_id_t;
 
 typedef struct measurement_entry_t {
@@ -30,7 +30,7 @@ typedef struct measurement_entry_t {
 
 class Storage {
  public:
-    explicit Storage(sensor_id_t uuid) : sensor_id(uuid) {}
+    explicit Storage(uuid_t uuid, sensor_id_t sensor_id) : uuid(uuid), sensor_id(sensor_id) {}
 
     virtual bool pushMeasurement(const MeasurementEntry &measurement) = 0;
     virtual bool tryPop(MeasurementEntry &out) = 0;
@@ -38,7 +38,7 @@ class Storage {
     bool hasData();
 
     virtual uint8_t getBufferSize() const;
-    virtual sensor_id_t getSensorId();
+    virtual const uuid_t &getSensorUUID();
     virtual bool getLatestMeasurement(MeasurementEntry &out) = 0;
     virtual bool getMeasurement(MeasurementEntry &out, size_t index) = 0;
 
@@ -48,6 +48,7 @@ class Storage {
     uint32_t head_ = 0;
     uint32_t entry_count_ = 0;
 
+    uuid_t uuid;
     sensor_id_t sensor_id;
 
     const uint8_t buffer_size_ = BUFFER_SIZE_PER_SENSOR;
