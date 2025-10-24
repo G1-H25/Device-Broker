@@ -19,7 +19,7 @@ namespace storage {
  *
  * @param uuid UUID to use for the sensor
  */
-MemoryBuffer::MemoryBuffer(uuid_t uuid) : Storage(uuid, 0) {
+MemoryBuffer::MemoryBuffer(sensor_id_t uuid) : Storage(uuid) {
 }
 
 /**

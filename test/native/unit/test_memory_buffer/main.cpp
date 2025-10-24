@@ -64,7 +64,7 @@ void test_sensor_buffer_data_integrity() {
 
     buffer.pushMeasurement({current_time, temperature, humidity});
 
-    TEST_ASSERT_EQUAL(id, buffer.getUUID());
+    TEST_ASSERT_EQUAL(id, buffer.getSensorUUID());
 
     TEST_ASSERT_EQUAL(current_time, entry.timestamp);
     TEST_ASSERT_EQUAL(temperature, entry.temperature);

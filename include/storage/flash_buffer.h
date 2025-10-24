@@ -28,7 +28,7 @@ typedef std::array<char, NVS_KEY_NAME_MAX_SIZE> nvs_key_t;
 
 class FlashBuffer : public Storage {
  public:
-    explicit FlashBuffer(storage::uuid_t uuid, storage::sensor_id_t sensor_id);
+    explicit FlashBuffer(storage::sensor_id_t uuid);
 
     bool pushMeasurement(const MeasurementEntry &measurement) override;
     bool tryPop(MeasurementEntry &out) override;

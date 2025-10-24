@@ -39,12 +39,12 @@ JsonDocument getSensorUUIDs() {
 }
 
 template<typename T>
-std::vector<storage::uuid_t> sendAllBuffers(storage::BufferManager<T> &buffers) {
+std::vector<storage::sensor_id_t> sendAllBuffers(storage::BufferManager<T> &buffers) {
     JsonDocument document;
     JsonArray temp;
-    std::vector<storage::uuid_t> failed;
+    std::vector<storage::sensor_id_t> failed;
 
-    for (storage::uuid_t i : buffers.getBufferUUIDs()) {
+    for (storage::sensor_id_t i : buffers.getBufferIds()) {
         document["sensors"].add(bufferToJson(buffers.getBuffer(i)));
 
         std::string payload;
@@ -74,16 +74,24 @@ std::vector<storage::uuid_t> sendAllBuffers(storage::BufferManager<T> &buffers) 
 
 namespace http {
 
-std::string_view uuidToString(const storage::uuid_t &sensor_id) {
+std::string_view uuidFromInt(storage::sensor_id_t sensor_id) {
+    storage::uuid_t uuid = { 0 };
+
+    for (int i = 0; i < uuid.size(); i++) {
+        uuid[i] = (~0 ^ (sensor_id ^ i));
+    }
+
+    uuid[6] |= 0b01001111;
+
     constexpr uint8_t bufferSize = 37;
     char buffer[bufferSize] = { 0 };
 
     snprintf(buffer, bufferSize,
         "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
-        sensor_id[0], sensor_id[1], sensor_id[2], sensor_id[3], sensor_id[4],
-        sensor_id[5], sensor_id[6], sensor_id[7], sensor_id[8], sensor_id[9],
-        sensor_id[10], sensor_id[11], sensor_id[12], sensor_id[13],
-        sensor_id[14], sensor_id[15]);
+        uuid[0], uuid[1], uuid[2], uuid[3], uuid[4],
+        uuid[5], uuid[6], uuid[7], uuid[8], uuid[9],
+        uuid[10], uuid[11], uuid[12], uuid[13],
+        uuid[14], uuid[15]);
 
     return buffer;
 }

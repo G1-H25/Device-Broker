@@ -58,7 +58,7 @@ JsonDocument bufferToJson(storage::Storage *buffer);
  * @param sensor_id
  * @return std::string_view
  */
-std::string_view uuidToString(const storage::uuid_t &sensor_id);
+std::string_view uuidFromInt(const storage::sensor_id_t &sensor_id);
 
 /**
  * @brief Iterates and sends all buffered sensor data.
@@ -67,7 +67,7 @@ std::string_view uuidToString(const storage::uuid_t &sensor_id);
  * @returns A vector containing all failed sensor uuids that could not be sent.
  */
 template<typename T>
-std::vector<storage::uuid_t> sendAllBuffers(storage::BufferManager<T> &buffers);
+std::vector<storage::sensor_id_t> sendAllBuffers(storage::BufferManager<T> &buffers);
 
 }  // namespace http
 

@@ -118,7 +118,7 @@ extern "C" void app_main() {
     //     ESP_LOGW(TAG, "SNTP sync failed");
     // }
 
-    buffers.createBuffer({0}, 0);
+    buffers.createBuffer({0});
 
     // Skapa buffer värden loop
     while (1) {

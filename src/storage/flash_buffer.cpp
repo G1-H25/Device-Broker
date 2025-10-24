@@ -31,7 +31,7 @@ std::mutex FlashBuffer::flash_mtx_{};
  * @param uuid - The unique identifier for the sensor.
  * @param sensor_id - The sensor id is used to store values in the nvs.
  */
-FlashBuffer::FlashBuffer(storage::uuid_t uuid, storage::sensor_id_t sensor_id) : Storage(uuid, sensor_id) {
+FlashBuffer::FlashBuffer(storage::sensor_id_t sensor_id) : Storage(sensor_id) {
     std::unique_lock<std::mutex> lock(FlashBuffer::flash_mtx_);
     if (flash_was_init_ == false) {
         if (nvs_flash_init() != ESP_OK) return;
@@ -53,7 +53,7 @@ FlashBuffer::FlashBuffer(storage::uuid_t uuid, storage::sensor_id_t sensor_id) :
     nvs_iterator_t iterator;
     nvs_entry_find_in_handle(registered_sensors_handle, nvs_type_t::NVS_TYPE_BLOB, &iterator);
 
-    // uuid_t temp_uuid;
+    // sensor_id_t temp_uuid;
     // size_t uuid_size = temp_uuid.size();
 
     // nvs_entry_info_t info;

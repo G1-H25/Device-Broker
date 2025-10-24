@@ -17,8 +17,8 @@ uint8_t Storage::getBufferSize() const {
     return this->buffer_size_;
 }
 
-const uuid_t &Storage::getSensorUUID() {
-    return this->uuid;
+const sensor_id_t &Storage::getSensorUUID() {
+    return this->sensor_id;
 }
 
 bool Storage::hasData() {
