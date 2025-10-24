@@ -53,14 +53,6 @@ JsonDocument getSensorUUIDs();
 JsonDocument bufferToJson(storage::Storage *buffer);
 
 /**
- * @brief
- *
- * @param sensor_id
- * @return std::string_view
- */
-std::string_view uuidFromInt(const storage::sensor_id_t &sensor_id);
-
-/**
  * @brief Iterates and sends all buffered sensor data.
  *
  * @param buffers Buffer manager where all buffers are stored.

@@ -38,7 +38,7 @@ class Storage {
     bool hasData();
 
     virtual uint8_t getBufferSize() const;
-    virtual const sensor_id_t &getSensorUUID();
+    virtual sensor_id_t getSensorId();
     virtual bool getLatestMeasurement(MeasurementEntry &out) = 0;
     virtual bool getMeasurement(MeasurementEntry &out, size_t index) = 0;
 

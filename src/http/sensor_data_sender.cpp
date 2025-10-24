@@ -16,6 +16,7 @@
 
 #include "http/sensor_data_sender.h"
 #include "secrets/routes.h"
+#include "uuid/uuid.h"
 
 #ifdef ESP_PLATFORM
 
@@ -74,33 +75,12 @@ std::vector<storage::sensor_id_t> sendAllBuffers(storage::BufferManager<T> &buff
 
 namespace http {
 
-std::string_view uuidFromInt(storage::sensor_id_t sensor_id) {
-    storage::uuid_t uuid = { 0 };
-
-    for (int i = 0; i < uuid.size(); i++) {
-        uuid[i] = (~0 ^ (sensor_id ^ i));
-    }
-
-    uuid[6] |= 0b01001111;
-
-    constexpr uint8_t bufferSize = 37;
-    char buffer[bufferSize] = { 0 };
-
-    snprintf(buffer, bufferSize,
-        "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
-        uuid[0], uuid[1], uuid[2], uuid[3], uuid[4],
-        uuid[5], uuid[6], uuid[7], uuid[8], uuid[9],
-        uuid[10], uuid[11], uuid[12], uuid[13],
-        uuid[14], uuid[15]);
-
-    return buffer;
-}
-
 JsonDocument bufferToJson(storage::Storage *buffer) {
     JsonDocument document;
     JsonDocument obj;
 
-    document["sensor_id"] = 10;
+    document["sensor_id"] = uuid::MyUuid<uuid::UuidVersion::NAME_BASED_MD5>(
+        buffer->getSensorId()).to_string().c_str();
 
     for (int i = 0; i < buffer->available(); i++) {
         storage::MeasurementEntry entry;

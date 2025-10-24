@@ -136,7 +136,7 @@ extern "C" void app_main() {
         }
 
         JsonDocument payload;
-        payload["batch_id"] = "asdf";
+        payload["batch_id"] = "batch-1";
         payload["generated_at"] = now;
         payload["sensors"].add(http::bufferToJson(buffer));
 
