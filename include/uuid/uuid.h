@@ -86,7 +86,7 @@ struct MyUuid {
     }
 #endif
 
-protected:
+ protected:
     /**
      * @brief Clear all UUID fields to zero
      */
@@ -193,8 +193,11 @@ struct MyUuid<UuidVersion::NAME_BASED_MD5> {
      */
     void to_string(std::array<char, 37>& output) const {
         snprintf(output.data(), output.size(),
-                "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
-                time_low,
+                "%02x%02x%02x%02x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+                static_cast<uint8_t>(time_low >> 24),
+                static_cast<uint8_t>(time_low >> 16),
+                static_cast<uint8_t>(time_low >> 8),
+                static_cast<uint8_t>(time_low),
                 time_mid,
                 time_hi_and_version,
                 clock_seq_hi_and_reserved,
@@ -220,7 +223,7 @@ struct MyUuid<UuidVersion::NAME_BASED_MD5> {
     }
 #endif
 
-private:
+ private:
     /**
      * @brief Clear all UUID fields to zero
      */
@@ -328,8 +331,11 @@ struct MyUuid<UuidVersion::RANDOM> {
      */
     void to_string(std::array<char, 37>& output) const {
         snprintf(output.data(), output.size(),
-                "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
-                time_low,
+                "%02x%02x%02x%02x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+                static_cast<uint8_t>(time_low << 24),
+                static_cast<uint8_t>(time_low << 16),
+                static_cast<uint8_t>(time_low << 8),
+                static_cast<uint8_t>(time_low),
                 time_mid,
                 time_hi_and_version,
                 clock_seq_hi_and_reserved,
@@ -355,7 +361,7 @@ struct MyUuid<UuidVersion::RANDOM> {
     }
 #endif
 
-private:
+ private:
     /**
      * @brief Clear all UUID fields to zero
      */
