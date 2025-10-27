@@ -15,7 +15,7 @@
 #include <ArduinoJson.h>
 
 #include <vector>
-#include <string_view>
+#include <string>
 
 #include "storage/storage.h"
 #include "storage/buffer_manager.h"
@@ -55,11 +55,12 @@ JsonDocument bufferToJson(storage::Storage *buffer);
 /**
  * @brief Iterates and sends all buffered sensor data.
  *
- * @param buffers Buffer manager where all buffers are stored.
+ * @param batch_id Id of the batch
+ * @param generated_at The timestamp when the request was generated.
+ * @param JsonArray
  * @returns A vector containing all failed sensor uuids that could not be sent.
  */
-template<typename T>
-std::vector<storage::sensor_id_t> sendAllBuffers(storage::BufferManager<T> &buffers);
+const std::string prepareRequest(std::string batch_id, uint32_t generated_at, storage::Storage *buffers);
 
 }  // namespace http
 

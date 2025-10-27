@@ -13,6 +13,7 @@
 #include <vector>
 #include <string>
 #include <cstdio>
+#include <cstdarg>
 
 #include "http/sensor_data_sender.h"
 #include "secrets/routes.h"
@@ -39,36 +40,6 @@ JsonDocument getSensorUUIDs() {
     return document;
 }
 
-template<typename T>
-std::vector<storage::sensor_id_t> sendAllBuffers(storage::BufferManager<T> &buffers) {
-    JsonDocument document;
-    JsonArray temp;
-    std::vector<storage::sensor_id_t> failed;
-
-    for (storage::sensor_id_t i : buffers.getBufferIds()) {
-        document["sensors"].add(bufferToJson(buffers.getBuffer(i)));
-
-        std::string payload;
-        convertFromJson(document, payload);
-
-        http::http_response_t resp = http::HttpClient::getDriver()->
-            performPostRequest(
-                HTTP_API_HOST,
-                HTTP_API_PORT,
-                HTTP_API_SUBMIT_BATCH,
-                {.data = payload});
-
-        document.clear();
-        if (resp.status == 201) {
-            buffers.clearBuffer(i);
-        } else {
-            failed.push_back(i);
-        }
-    }
-
-    return failed;
-}
-
 }  // namespace http
 
 #endif  // ESP_PLATFORM
@@ -88,14 +59,30 @@ JsonDocument bufferToJson(storage::Storage *buffer) {
         if (!buffer->getMeasurement(entry, i))
             continue;
 
-        obj[HTTP_API_JSON_TIME_KEY] = entry.timestamp;
-        obj[HTTP_API_JSON_TEMP_KEY] = entry.temperature;
         obj[HTTP_API_JSON_HUM_KEY] = entry.humidity;
+        obj[HTTP_API_JSON_TEMP_KEY] = entry.temperature;
+        obj[HTTP_API_JSON_TIME_KEY] = entry.timestamp;
 
         document["measurements"].add(obj);
     }
 
     return document;
+}
+
+const std::string prepareRequest(
+        std::string batch_id,
+        uint32_t generated_at,
+        storage::Storage *buffer) {
+    JsonDocument payload;
+
+    payload["batch_id"] = batch_id;
+    payload["generated_at"] = generated_at;
+
+    payload["sensors"].add(bufferToJson(buffer));
+
+    std::string str;
+    convertFromJson(payload, str);
+    return str;
 }
 
 }  // namespace http

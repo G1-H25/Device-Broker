@@ -125,10 +125,10 @@ HttpResponse EspHttpDriver::performPostRequest(
     client = esp_http_client_init(config_);
 
     esp_http_client_set_method(client, HTTP_METHOD_POST);
-    esp_http_client_set_post_field(client, req.data.begin(), req.data.size());
+    esp_http_client_set_post_field(client, req.data.c_str(), req.data.size());
 
     for (auto i : req.headers) {
-        esp_http_client_set_header(client, i.name.begin(), i.value.begin());
+        esp_http_client_set_header(client, i.name.c_str(), i.value.c_str());
     }
 
     esp_http_client_add_auth(client);

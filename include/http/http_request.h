@@ -12,18 +12,18 @@
 #ifndef INCLUDE_HTTP_HTTP_REQUEST_H_
 #define INCLUDE_HTTP_HTTP_REQUEST_H_
 
-#include <string_view>
+#include <string>
 #include <vector>
 
 typedef struct http_header_t {
-    std::string_view name;
-    std::string_view value;
+    std::string name;
+    std::string value;
 } HttpHeader;
 
 typedef struct http_request_t {
-    std::string_view data = "";
+    std::string data = "";
     std::vector<HttpHeader> headers = {};
-    std::string_view token = "";
+    std::string token = "";
 } HttpRequest;
 
 #endif  // INCLUDE_HTTP_HTTP_REQUEST_H_
