@@ -18,11 +18,16 @@ These files contains the following information:
 #ifndef SECRETS_H_
 #define SECRETS_H_
 
-#define HTTP_API_HOST               "192.168.8.169"
-#define HTTP_API_PORT               5000
+#define HTTP_API_HOST               "example-domain.com"
+#define HTTP_API_PORT               443
+// #define API_USE_HTTPS 1 // Currently unimplemented
+
+#define HTTP_TEST_API_HOST               "test.example-domain.com"
+#define HTTP_TEST_API_PORT               443
+// #define TEST_API_USE_HTTPS // Currently unimplemented
 
 #define HTTP_API_HEALTH_ENDPOINT    "/Health"
-#define HTTP_API_POST_MEASUREMENT   "/Post"
+#define HTTP_API_SUBMIT_BATCH       "/api/sensor/batch"
 #define HTTP_API_SYNC_SENSORS       "/GetSensors"
 
 #define HTTP_API_JSON_TEMP_KEY      "temp"
@@ -37,9 +42,20 @@ When building on github actions these must be defined when compiling the program
 ## credentials.h
 
 ```cpp
-// Replace with actual username and password. These are used to authenticate the broker towards the backend server. In exchange we will recieve a JWT.
-#define USERNAME "admin"
-#define PASSWORD "123456"
+#ifndef CREDENTIALS_H_
+#define CREDENTIALS_H_
+
+#define WIFI_PASSWORD "admin"
+#define WIFI_SSID "123456"
+
+#define TEST_WIFI_PASSWORD "admin"
+#define TEST_WIFI_SSID "123456"
+
+#define BACKEND_PASSWORD "example"
+#define BACKEND_USERNAME "big_strong_password123"
+
+#endif  // CREDENTIALS_H_
+
 ```
 
 # Networking
