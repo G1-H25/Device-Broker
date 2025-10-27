@@ -80,7 +80,7 @@ void test_sensor_buffer_data_integrity() {
     buffer2.pushMeasurement({current_time + 25, temperature + 25, humidity + 25});
     buffer2.pushMeasurement({current_time + 15, temperature + 15, humidity + 15});
 
-    TEST_ASSERT_EQUAL(uuid, buffer.getUUID());
+    TEST_ASSERT_EQUAL(uuid, buffer.getSensorId());
 
     MeasurementEntry entry;
     TEST_ASSERT_TRUE(buffer.getMeasurement(entry, 0));
@@ -99,7 +99,7 @@ void test_sensor_buffer_data_integrity() {
     TEST_ASSERT_EQUAL(temperature + 10, entry.temperature);
     TEST_ASSERT_EQUAL(humidity + 10, entry.humidity);
 
-    TEST_ASSERT_EQUAL(uuid2, buffer2.getUUID());
+    TEST_ASSERT_EQUAL(uuid2, buffer2.getSensorId());
 
     TEST_ASSERT_TRUE(buffer2.getMeasurement(entry, 0));
     TEST_ASSERT_TRUE(buffer2.getMeasurement(entry, 1));

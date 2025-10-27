@@ -8,6 +8,8 @@
  * @copyright Copyright (c) 2025
 */
 
+#ifndef UNIT_TEST
+
 #include <esp_log.h>
 #include <driver/gpio.h>
 #include <sntp.h>
@@ -169,3 +171,5 @@ extern "C" void app_main() {
         vTaskDelay(pdMS_TO_TICKS(2000));
     }
 }
+
+#endif  // UNIT_TEST
