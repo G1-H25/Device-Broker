@@ -57,10 +57,9 @@ JsonDocument bufferToJson(storage::Storage *buffer);
  *
  * @param batch_id Id of the batch
  * @param generated_at The timestamp when the request was generated.
- * @param JsonArray
  * @returns A vector containing all failed sensor uuids that could not be sent.
  */
-const std::string prepareRequest(std::string batch_id, uint32_t generated_at, storage::Storage *buffers);
+const char *prepareRequest(const char *batch_id, uint32_t generated_at, storage::Storage *buffer);
 
 }  // namespace http
 

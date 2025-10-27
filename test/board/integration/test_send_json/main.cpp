@@ -27,23 +27,17 @@ void test_send_to_test_api() {
     storage::BufferManager<storage::FlashBuffer> buffers;
 
     buffers.createBuffer(kId);
-    buffers.getBuffer(kId)->pushMeasurement({10, 10, 10});
-    buffers.getBuffer(kId)->pushMeasurement({10, 10, 10});
-    buffers.getBuffer(kId)->pushMeasurement({10, 10, 10});
-    buffers.getBuffer(kId)->pushMeasurement({10, 10, 10});
-    buffers.getBuffer(kId)->pushMeasurement({10, 10, 10});
-    buffers.getBuffer(kId)->pushMeasurement({10, 10, 10});
-    buffers.getBuffer(kId)->pushMeasurement({10, 10, 10});
-    buffers.getBuffer(kId)->pushMeasurement({10, 10, 10});
-    buffers.getBuffer(kId)->pushMeasurement({10, 10, 10});
+    storage::Storage *buffer = buffers.getBuffer(kId);
+    for (int i = 0; i < buffer->getBufferSize() / 4; i++) {
+        buffer->pushMeasurement({10, 10, 10});
+    }
 
+    std::string str = http::prepareRequest("abc123", 100, buffer);
 
-    std::string str = http::prepareRequest("abc123", 100, buffers.getBuffer(kId));
+    ESP_LOGI("JSON", "%s", str);
 
-    ESP_LOGI("JSON", "%s", str.c_str());
-
-    http::HttpResponse resp = http::HttpClient::
-        getDriver()->performPostRequest(
+    http::HttpResponse resp =
+        http::HttpClient::getDriver()->performPostRequest(
             HTTP_TEST_API_HOST,
             HTTP_TEST_API_PORT,
             HTTP_API_SUBMIT_BATCH,
@@ -54,8 +48,8 @@ void test_send_to_test_api() {
                 }
             });
 
-    ESP_LOGI("__STATUS__", "(%i) %s", resp.status, resp.data.c_str());
-    TEST_ASSERT_EQUAL(200, resp.status);
+    ESP_LOGI("__STATUS__", "(%i) %s", resp.status, resp.data);
+    TEST_ASSERT_EQUAL(HttpStatus_Ok, resp.status);
 }
 
 extern "C" void app_main() {

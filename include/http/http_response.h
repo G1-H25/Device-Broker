@@ -18,7 +18,7 @@ namespace http {
 
 typedef struct http_response_t {
     int status;
-    std::string data;
+    const char *data;
 } HttpResponse;
 
 }  // namespace http

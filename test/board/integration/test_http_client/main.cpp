@@ -31,7 +31,7 @@ void test_http_client_get() {
         HTTP_API_HOST, HTTP_API_PORT, HTTP_API_HEALTH_ENDPOINT, false);
     TEST_ASSERT_EQUAL(200, response.status);  // using current value to test if get works
 
-    ESP_LOGI("HTTP_GET_DATA", "%s", response.data.begin());
+    ESP_LOGI("HTTP_GET_DATA", "%s", response.data);
 }
 
 void test_http_client_post() {
@@ -40,7 +40,7 @@ void test_http_client_post() {
         {.headers = {{"Content-Type", "application/json"}}}, false);
     TEST_ASSERT_EQUAL(405, response.status);  // using current value to test if get works
 
-    ESP_LOGI("HTTP_POST_DATA", "%s", response.data.begin());
+    ESP_LOGI("HTTP_POST_DATA", "%s", response.data);
 }
 
 void test_http_client_send_batch() {
@@ -60,7 +60,7 @@ void test_http_client_send_batch() {
 extern "C" void app_main() {
     UNITY_BEGIN();
 
-    wifi::WiFiClient client{WIFI_SSID, WIFI_PASSWORD};
+    wifi::WiFiClient client{TEST_WIFI_SSID, TEST_WIFI_PASSWORD};
     client.connect();
 
     while (client.getStatus() != wifi::CONNECTED) {}

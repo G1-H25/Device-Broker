@@ -14,6 +14,7 @@
 #include <string>
 #include <cstdio>
 #include <cstdarg>
+#include <utility>
 
 #include "http/sensor_data_sender.h"
 #include "secrets/routes.h"
@@ -63,14 +64,15 @@ JsonDocument bufferToJson(storage::Storage *buffer) {
         obj[HTTP_API_JSON_TEMP_KEY] = entry.temperature;
         obj[HTTP_API_JSON_TIME_KEY] = entry.timestamp;
 
-        document["measurements"].add(obj);
+        document["measurements"].add(std::move(obj));
+        obj = JsonObject();
     }
 
     return document;
 }
 
-const std::string prepareRequest(
-        std::string batch_id,
+const char *prepareRequest(
+        const char *batch_id,
         uint32_t generated_at,
         storage::Storage *buffer) {
     JsonDocument payload;
@@ -78,11 +80,11 @@ const std::string prepareRequest(
     payload["batch_id"] = batch_id;
     payload["generated_at"] = generated_at;
 
-    payload["sensors"].add(bufferToJson(buffer));
+    payload["sensors"].add(std::move(bufferToJson(buffer)));
 
     std::string str;
     convertFromJson(payload, str);
-    return str;
+    return str.c_str();
 }
 
 }  // namespace http

@@ -49,17 +49,11 @@ HttpResponse EspHttpDriver::performGetRequest(
         .port = port,
         .path = endpoint.begin(),
         .disable_auto_redirect = true,
-        .event_handler = event_handler,
+        .event_handler = EspHttpDriver::event_handler,
         .transport_type = use_https ? HTTP_TRANSPORT_OVER_SSL : HTTP_TRANSPORT_OVER_TCP,
         .user_data = response_buffer,
         .crt_bundle_attach = esp_crt_bundle_attach,
     };
-
-    esp_netif_t *netif = esp_netif_get_default_netif();
-    esp_netif_ip_info_t info;
-    esp_netif_get_ip_info(netif, &info);
-
-    ESP_LOGI("HTTP_IP", "%lli", info.ip.addr);
 
     esp_http_client_handle_t client;
     client = esp_http_client_init(config_);
@@ -73,7 +67,6 @@ HttpResponse EspHttpDriver::performGetRequest(
     } else {
         ESP_LOGE(HTTP_LOG_TAG, "HTTP GET request failed: %s", esp_err_to_name(err));
     }
-    ESP_LOG_BUFFER_HEX(HTTP_LOG_TAG, response_buffer, strlen(response_buffer));
 
     int status = esp_http_client_get_status_code(client);
 
@@ -105,30 +98,22 @@ HttpResponse EspHttpDriver::performPostRequest(
     *config_ = {
         .host = host.begin(),
         .port = port,
-        .username = "admin",
-        .password = "123",
         .path = endpoint.begin(),
         .disable_auto_redirect = true,
-        .event_handler = event_handler,
+        .event_handler = EspHttpDriver::event_handler,
         .transport_type = use_https ? HTTP_TRANSPORT_OVER_SSL : HTTP_TRANSPORT_OVER_TCP,
         .user_data = response_buffer,
         .crt_bundle_attach = esp_crt_bundle_attach,
     };
 
-    esp_netif_t *netif = esp_netif_get_default_netif();
-    esp_netif_ip_info_t info;
-    esp_netif_get_ip_info(netif, &info);
-
-    ESP_LOGI("HTTP_IP", "%lli", info.ip.addr);
-
     esp_http_client_handle_t client;
     client = esp_http_client_init(config_);
 
     esp_http_client_set_method(client, HTTP_METHOD_POST);
-    esp_http_client_set_post_field(client, req.data.c_str(), req.data.size());
+    esp_http_client_set_post_field(client, req.data, strlen(req.data));
 
     for (auto i : req.headers) {
-        esp_http_client_set_header(client, i.name.c_str(), i.value.c_str());
+        esp_http_client_set_header(client, i.name, i.value);
     }
 
     esp_http_client_add_auth(client);
@@ -143,7 +128,6 @@ HttpResponse EspHttpDriver::performPostRequest(
     } else {
         ESP_LOGE(HTTP_LOG_TAG, "HTTP GET request failed: %s", esp_err_to_name(err));
     }
-    ESP_LOG_BUFFER_HEX(HTTP_LOG_TAG, response_buffer, strlen(response_buffer));
 
     int status = esp_http_client_get_status_code(client);
 

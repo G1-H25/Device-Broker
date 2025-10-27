@@ -16,14 +16,13 @@
 #include <vector>
 
 typedef struct http_header_t {
-    std::string name;
-    std::string value;
+    const char *name;
+    const char *value;
 } HttpHeader;
 
 typedef struct http_request_t {
-    std::string data = "";
+    const char *data = "";
     std::vector<HttpHeader> headers = {};
-    std::string token = "";
 } HttpRequest;
 
 #endif  // INCLUDE_HTTP_HTTP_REQUEST_H_
