@@ -17,8 +17,10 @@
 #include <utility>
 
 #include "http/sensor_data_sender.h"
-#include "secrets/routes.h"
 #include "uuid/uuid.h"
+#ifndef UNIT_TEST
+#include "secrets/routes.h"
+#endif  // UNIT_TEST
 
 #ifdef ESP_PLATFORM
 
