@@ -51,8 +51,7 @@ JsonDocument bufferToJson(storage::Storage *buffer, int max_elements) {
     JsonDocument document;
     JsonDocument obj;
 
-    document["sensor_id"] = uuid::MyUuid<uuid::UuidVersion::NAME_BASED_MD5>(
-        buffer->getSensorId()).to_string().c_str();
+    document["sensor_id"] = 10;
 
     int loops = max_elements == -1 ? max_elements = buffer->available() : max_elements;
     for (int i = 0; i < loops; i++) {
