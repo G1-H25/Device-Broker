@@ -18,7 +18,10 @@
 #include "storage/memory_buffer.h"
 #include "wifi/wifi_client.h"
 #include "http/http_client.h"
-#include "secrets/routes.h"
+
+#define HTTP_API_JSON_TIME_KEY "key"
+#define HTTP_API_JSON_HUM_KEY "key1"
+#define HTTP_API_JSON_TEMP_KEY "key2"
 
 void test_buffer_to_json() {
     constexpr int sensor_id = 0;
@@ -29,7 +32,7 @@ void test_buffer_to_json() {
     manager.getBuffer(sensor_id)->pushMeasurement({temp_data, temp_data, temp_data});
     manager.getBuffer(sensor_id)->pushMeasurement({temp_data, temp_data, temp_data});
 
-    JsonDocument arr = http::bufferToJson(static_cast<storage::Storage *>(manager.getBuffer(sensor_id)));
+    JsonDocument arr = http::bufferToJson(static_cast<storage::Storage *>(manager.getBuffer(sensor_id)), -1);
 
     std::string str;
     serializeJsonPretty(arr, str);
