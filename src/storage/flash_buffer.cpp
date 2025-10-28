@@ -120,6 +120,28 @@ bool FlashBuffer::pushMeasurement(const MeasurementEntry &measurement) {
 bool FlashBuffer::tryPop(MeasurementEntry &out) {
     if (!this->flash_was_init_ || entry_count_ == 0) return false;
 
+    this->getLatestMeasurement(out);
+
+    --entry_count_;
+    --head_ %= this->buffer_size_;
+
+    esp_err_t err = nvs_erase_key(
+        this->nvs_handle_,
+        reinterpret_cast<const char *>(getKeyFromIndex(head_ + 1).data()));
+
+    std::unique_lock<std::mutex> lock(FlashBuffer::flash_mtx_);
+    nvs_commit(this->nvs_handle_);
+    return err == ESP_OK;
+}
+
+/**
+ * @brief Pop a value from flash.
+ *
+ * @returns True if success, false otherwise
+ */
+bool FlashBuffer::tryPop() {
+    if (!this->flash_was_init_ || entry_count_ == 0) return false;
+
     --entry_count_;
     --head_ %= this->buffer_size_;
 

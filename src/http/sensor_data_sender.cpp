@@ -47,14 +47,15 @@ JsonDocument getSensorUUIDs() {
 
 namespace http {
 
-JsonDocument bufferToJson(storage::Storage *buffer) {
+JsonDocument bufferToJson(storage::Storage *buffer, int max_elements) {
     JsonDocument document;
     JsonDocument obj;
 
     document["sensor_id"] = uuid::MyUuid<uuid::UuidVersion::NAME_BASED_MD5>(
         buffer->getSensorId()).to_string().c_str();
 
-    for (int i = 0; i < buffer->available(); i++) {
+    int loops = max_elements == -1 ? max_elements = buffer->available() : max_elements;
+    for (int i = 0; i < loops; i++) {
         storage::MeasurementEntry entry;
 
         if (!buffer->getMeasurement(entry, i))
@@ -74,13 +75,14 @@ JsonDocument bufferToJson(storage::Storage *buffer) {
 const char *prepareRequest(
         const char *batch_id,
         uint32_t generated_at,
-        storage::Storage *buffer) {
+        storage::Storage *buffer,
+        int max_elements) {
     JsonDocument payload;
 
     payload["batch_id"] = batch_id;
     payload["generated_at"] = generated_at;
 
-    payload["sensors"].add(std::move(bufferToJson(buffer)));
+    payload["sensors"].add(std::move(bufferToJson(buffer, max_elements)));
 
     std::string str;
     convertFromJson(payload, str);

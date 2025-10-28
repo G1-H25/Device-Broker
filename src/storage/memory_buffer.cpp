@@ -65,6 +65,18 @@ bool MemoryBuffer::tryPop(MeasurementEntry &out) {
 }
 
 /**
+ * @brief Pop a value from memory.
+ *
+ * @returns True if success, false otherwise
+ */
+bool MemoryBuffer::tryPop() {
+    if (this->entry_count_ == 0) return false;
+
+    this->entry_count_--;
+    return true;
+}
+
+/**
  * @brief Get the latest measurement from memory
 
  * @returns `MeasurementEntry *` or a `nullptr` failed

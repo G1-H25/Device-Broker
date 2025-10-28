@@ -33,8 +33,8 @@ JsonDocument getSensorUUIDs();
 /**
  * @brief Converts a stored buffer into a JsonArray.
  *
- * @param buffers A reference to a buffermanager containing all available buffers
- * @param uuid_t The sensor to convert buffered values into json.
+ * @param buffer Which buffer to poll values from
+ * @param max_elements The number of elements that will be polled.
  * @returns A JsonArray containing all buffered data.
  *
  * The keys below are defined in secrets/routes.h
@@ -50,7 +50,7 @@ JsonDocument getSensorUUIDs();
  * @endcode
  *
  */
-JsonDocument bufferToJson(storage::Storage *buffer);
+JsonDocument bufferToJson(storage::Storage *buffer, int max_elements);
 
 /**
  * @brief Iterates and sends all buffered sensor data.
@@ -59,7 +59,7 @@ JsonDocument bufferToJson(storage::Storage *buffer);
  * @param generated_at The timestamp when the request was generated.
  * @returns A vector containing all failed sensor uuids that could not be sent.
  */
-const char *prepareRequest(const char *batch_id, uint32_t generated_at, storage::Storage *buffer);
+const char *prepareRequest(const char *batch_id, uint32_t generated_at, storage::Storage *buffer, int max_elements);
 
 }  // namespace http
 

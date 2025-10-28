@@ -34,6 +34,7 @@ class Storage {
 
     virtual bool pushMeasurement(const MeasurementEntry &measurement) = 0;
     virtual bool tryPop(MeasurementEntry &out) = 0;
+    virtual bool tryPop() = 0;
     size_t available();
     bool hasData();
 

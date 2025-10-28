@@ -137,27 +137,23 @@ extern "C" void app_main() {
             });
         }
 
+        constexpr int elements_to_send = 6;
+
         JsonDocument payload;
         payload["batch_id"] = "batch-1";
         payload["generated_at"] = now;
-        payload["sensors"].add(http::bufferToJson(buffer));
-
+        payload["sensors"].add(http::bufferToJson(buffer, elements_to_send));
 
         std::string data;
         convertFromJson(payload, data);
         ESP_LOGI("__JSON__", "%s", data.c_str());
-
-        // http::HttpResponse resp = http::HttpClient::getDriver()->performGetRequest(
-        //     HTTP_TEST_API_HOST,
-        //     HTTP_TEST_API_PORT,
-        // "/");
 
         http::HttpResponse resp = http::HttpClient::getDriver()->performPostRequest(
             HTTP_TEST_API_HOST,
             HTTP_TEST_API_PORT,
             HTTP_API_SUBMIT_BATCH,
             {
-                .data = data,
+                .data = http::prepareRequest("batch1", 100, buffer, elements_to_send),
                 .headers = {
                     {
                         "Content-Type", "application/json"
@@ -165,8 +161,14 @@ extern "C" void app_main() {
                 }
             });
 
+        if (resp.status == HttpStatus_Ok) {
+            for (int i = 0; i < elements_to_send; i++) {
+                buffer->tryPop();
+            }
+        }
+
         ESP_LOGI("__STATUS__", "%i", resp.status);
-        ESP_LOGI("__DATA__", "%s", resp.data.begin());
+        ESP_LOGI("__DATA__", "%s", resp.data);
 
         vTaskDelay(pdMS_TO_TICKS(2000));
     }
