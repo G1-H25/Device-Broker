@@ -20,6 +20,10 @@
 #include "uuid/uuid.h"
 #ifndef UNIT_TEST
 #include "secrets/routes.h"
+#else  // UNIT_TEST
+#define HTTP_API_JSON_TIME_KEY "key"
+#define HTTP_API_JSON_HUM_KEY "key1"
+#define HTTP_API_JSON_TEMP_KEY "key2"
 #endif  // UNIT_TEST
 
 #ifdef ESP_PLATFORM
