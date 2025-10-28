@@ -80,47 +80,31 @@ extern "C" void app_main() {
 
     storage::BufferManager<storage::FlashBuffer> buffers;
 
-    // gpio::Button button {1, [](const Event &event) {
-    //     std::vector<storage::uuid_t> uuids;
-    // }};
+    esp_sntp_config_t config = ESP_NETIF_SNTP_DEFAULT_CONFIG("pool.ntp.org");
+    esp_netif_sntp_init(&config);
 
-        // init NVS + TCP/IP stack (assume Wi‑Fi already connected)
-    // esp_err_t r = nvs_flash_init();
-    // if (r == ESP_ERR_NVS_NO_FREE_PAGES || r == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-    //     nvs_flash_erase();
-    //     nvs_flash_init();
-    // }
-    // esp_netif_init();
-    // esp_event_loop_create_default();
+    if (esp_netif_sntp_sync_wait(pdMS_TO_TICKS(10000)) != ESP_OK) {
+        ESP_LOGI("SNTP", "Failed to update system time within 10s timeout");
+    }
 
-    // // optional: set timezone (UTC here)
-    // setenv("TZ", "UTC2", 1);
-    // tzset();
+    time_t now;
+    struct tm timeinfo;
+    setenv("TZ", "CET", 1);
+    tzset();
 
-    // // init SNTP
-    // sntp_setoperatingmode(SNTP_OPMODE_POLL);
-    // sntp_setservername(0, "pool.ntp.org"); // or "time.google.com"
-    // sntp_init();
-
-    // // wait for sync (simple loop)
-    time_t now = 0;
-    // struct tm tm = {0};
-    // int retries = 0;
-    // while (tm.tm_year < (2020 - 1900) && retries++ < 10) {
-    //     vTaskDelay(pdMS_TO_TICKS(1000));
-    //     time(&now);
-    //     localtime_r(&now, &tm);
-    // }
-
-    // if (tm.tm_year >= (2020 - 1900)) {
-    //     char buf[64];
-    //     strftime(buf, sizeof(buf), "%c", &tm);
-    //     ESP_LOGI(TAG, "Time synced: %s", buf);
-    // } else {
-    //     ESP_LOGW(TAG, "SNTP sync failed");
-    // }
+    time(&now);
+    localtime_r(&now, &timeinfo);
 
     buffers.createBuffer({0});
+
+    storage::Storage *buffer = buffers.getBuffer({0});
+    for (int i = 0; i < 10; i++) {
+        buffer->pushMeasurement({
+            now,
+            static_cast<uint16_t>((esp_random() % 20) + 5),
+            static_cast<uint16_t>((esp_random() % 100))
+        });
+    }
 
     // Skapa buffer värden loop
     while (1) {
@@ -128,38 +112,33 @@ extern "C" void app_main() {
         time(&now);
         // localtime_r(&now, &tm);
 
-        storage::Storage *buffer = buffers.getBuffer({0});
-        for (int i = 0; i < 10; i++) {
-            buffer->pushMeasurement({
-                now,
-                static_cast<uint16_t>((esp_random() % 20) + 5),
-                static_cast<uint16_t>((esp_random() % 100))
-            });
-        }
+        if (!buffer->hasData()) continue;
 
-        constexpr int elements_to_send = 6;
+
+        constexpr int elements_to_send = 3;
 
         JsonDocument payload;
-        payload["batch_id"] = "batch-1";
-        payload["generated_at"] = now;
-        payload["sensors"].add(http::bufferToJson(buffer, elements_to_send));
+        payload["gatewayUUID"] = "3fa85f64-5717-4562-b3fc-2c963f66afa6";
+        payload["readings"]["batch_id"] = "batch-1";
+        payload["readings"]["generated_at"] = now;
+        payload["readings"]["sensors"].add(http::bufferToJson(buffer, elements_to_send));
 
         std::string data;
         convertFromJson(payload, data);
         ESP_LOGI("__JSON__", "%s", data.c_str());
 
         http::HttpResponse resp = http::HttpClient::getDriver()->performPostRequest(
-            HTTP_TEST_API_HOST,
-            HTTP_TEST_API_PORT,
+            HTTP_API_HOST,
+            HTTP_API_PORT,
             HTTP_API_SUBMIT_BATCH,
             {
-                .data = http::prepareRequest("batch1", 100, buffer, elements_to_send),
+                .data = data.c_str(),
                 .headers = {
                     {
                         "Content-Type", "application/json"
                     }
                 }
-            });
+            }, false);
 
         if (resp.status == HttpStatus_Ok) {
             for (int i = 0; i < elements_to_send; i++) {
