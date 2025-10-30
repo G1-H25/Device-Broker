@@ -12,11 +12,11 @@
 
 #include <esp_log.h>
 #include <driver/gpio.h>
-#include <sntp.h>
 #include <esp_sntp.h>
 #include <esp_netif_sntp.h>
 #include <mbedtls/base64.h>
 #include <string>
+#include <cstdio>
 #include "http/http_client.h"
 #include "http/http_driver.h"
 #include "http/http_esp_client_driver.h"
@@ -26,6 +26,7 @@
 #include "storage/flash_buffer.h"
 #include "gpio/esp_gpio_driver.h"
 #include "gpio/button.h"
+#include "uuid/uuid.h"
 #include "secrets/routes.h"
 #include "secrets/credentials.h"
 
@@ -69,6 +70,8 @@ using storage::FlashBuffer;
 // }
 
 extern "C" void app_main() {
+    static uint32_t gatewayId = 0;
+    static char *gatewayUUID = new char[37];
     wifi::WiFiClient client{WIFI_SSID, WIFI_PASSWORD};
     client.connect();
 
@@ -77,6 +80,43 @@ extern "C" void app_main() {
 
     gpio::EspGpioDriver driver;
     http::HttpClient::setDriver(new http::EspHttpDriver{});
+
+    {
+        nvs_handle_t handle;
+        nvs_open("gatewayid", NVS_READWRITE, &handle);
+
+        esp_err_t err = nvs_get_u32(handle, "gatewayid", &gatewayId);
+        if (err != ESP_OK) {
+            gatewayId = esp_random();
+            nvs_set_u32(handle, "gatewayid", gatewayId);
+        }
+
+        std::string str = uuid::MyUuid<uuid::UuidVersion::NAME_BASED_MD5>(gatewayId)
+            .to_string();
+
+        snprintf(gatewayUUID, sizeof(str.size()), str.c_str());
+
+        // Cannot automatically register gatewayUUID since core panics with MMU error
+        // {
+        //     JsonDocument document;
+        //     document["uuid"] = gatewayUUID;
+        //     document["currentLocationId"] = 1;
+        //     document["gatewayURL"] = "nothin";
+
+        //     convertFromJson(document, str);
+
+        //     http::HttpClient::getDriver()->performPostRequest(
+        //         HTTP_API_HOST,
+        //         HTTP_API_PORT,
+        //         HTTP_API_REGISTER_GATEWAY,
+        //         {
+        //             .data = str.c_str(),
+        //             .headers = {
+        //                 {"Content-Type", "application/json"}
+        //             }
+        //         });
+        // }
+    }
 
     storage::BufferManager<storage::FlashBuffer> buffers;
 
@@ -118,7 +158,7 @@ extern "C" void app_main() {
         constexpr int elements_to_send = 3;
 
         JsonDocument payload;
-        payload["gatewayUUID"] = "3fa85f64-5717-4562-b3fc-2c963f66afa6";
+        payload["gatewayUUID"] = gatewayUUID;
         payload["readings"]["batch_id"] = "batch-1";
         payload["readings"]["generated_at"] = now;
         payload["readings"]["sensors"].add(http::bufferToJson(buffer, elements_to_send));
