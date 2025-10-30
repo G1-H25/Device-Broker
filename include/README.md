@@ -18,17 +18,16 @@ These files contains the following information:
 #ifndef SECRETS_H_
 #define SECRETS_H_
 
-#define HTTP_API_HOST               "example-domain.com"
+#define HTTP_API_HOST               "prod.someserver.topdomain"
 #define HTTP_API_PORT               443
-// #define API_USE_HTTPS 1 // Currently unimplemented
 
-#define HTTP_TEST_API_HOST               "test.example-domain.com"
-#define HTTP_TEST_API_PORT               443
-// #define TEST_API_USE_HTTPS // Currently unimplemented
+#define HTTP_TEST_API_HOST          "dev.someserver.topdomain"
+#define HTTP_TEST_API_PORT          443
 
-#define HTTP_API_HEALTH_ENDPOINT    "/Health"
-#define HTTP_API_SUBMIT_BATCH       "/api/sensor/batch"
-#define HTTP_API_SYNC_SENSORS       "/GetSensors"
+#define HTTP_API_HEALTH_ENDPOINT    "/health"
+#define HTTP_API_SUBMIT_BATCH       "/api/gateway/batch"
+#define HTTP_API_SYNC_SENSORS       "/api/delivery/packages"
+#define HTTP_API_REGISTER_GATEWAY   "/api/gateway/register"
 
 #define HTTP_API_JSON_TEMP_KEY      "temp"
 #define HTTP_API_JSON_HUM_KEY       "hum"
