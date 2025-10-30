@@ -30,7 +30,8 @@
 #include "secrets/routes.h"
 #include "secrets/credentials.h"
 
-#define IO_MUX_BASE_ADDR 0x60009000
+#define FORCE_CREATE_NEW_UUID 1
+#define USE_HTTPS 0
 
 using jenlib::gpio::Pin;
 using jenlib::gpio::PinIndex;
@@ -69,63 +70,48 @@ using storage::FlashBuffer;
 //     }
 // }
 
+typedef struct api_info_t {
+    char *host;
+    uint16_t port;
+    char *register_gateway;
+    char *submit_batch;
+} ApiInfo;
+
+inline const uint8_t http_api_host_strlen = strlen(HTTP_API_HOST);
+inline const uint8_t http_api_register_gateway_strlen = strlen(HTTP_API_REGISTER_GATEWAY);
+inline const uint8_t http_api_submit_batch_strlen = strlen(HTTP_API_SUBMIT_BATCH);
+
+static ApiInfo info {
+    .host = new char[http_api_host_strlen],
+    .port = HTTP_API_PORT,
+    .register_gateway = HTTP_API_REGISTER_GATEWAY,
+    .submit_batch = HTTP_API_SUBMIT_BATCH
+};
+
+void syncTime();
+void getOrCreateUUID(std::string &uuid, uint32_t gatewayId);
+
 extern "C" void app_main() {
+    snprintf(info.host, http_api_host_strlen + 1, HTTP_API_HOST);
+    // snprintf(info.submit_batch, http_api_submit_batch_strlen + 1, HTTP_API_SUBMIT_BATCH);
+    // snprintf(info.register_gateway, http_api_register_gateway_strlen + 1, HTTP_API_REGISTER_GATEWAY);
+
     static uint32_t gatewayId = 0;
-    static char *gatewayUUID = new char[37];
+    std::string gatewayUUID;
     wifi::WiFiClient client{WIFI_SSID, WIFI_PASSWORD};
     client.connect();
 
     while (client.getStatus() != wifi::CONNECTED) {}
-    vTaskDelay(pdMS_TO_TICKS(2000));
+    vTaskDelay(pdMS_TO_TICKS(3000));
+
+    syncTime();
 
     gpio::EspGpioDriver driver;
     http::HttpClient::setDriver(new http::EspHttpDriver{});
 
-    {
-        nvs_handle_t handle;
-        nvs_open("gatewayid", NVS_READWRITE, &handle);
-
-        esp_err_t err = nvs_get_u32(handle, "gatewayid", &gatewayId);
-        if (err != ESP_OK) {
-            gatewayId = esp_random();
-            nvs_set_u32(handle, "gatewayid", gatewayId);
-        }
-
-        std::string str = uuid::MyUuid<uuid::UuidVersion::NAME_BASED_MD5>(gatewayId)
-            .to_string();
-
-        snprintf(gatewayUUID, sizeof(str.size()), str.c_str());
-
-        // Cannot automatically register gatewayUUID since core panics with MMU error
-        // {
-        //     JsonDocument document;
-        //     document["uuid"] = gatewayUUID;
-        //     document["currentLocationId"] = 1;
-        //     document["gatewayURL"] = "nothin";
-
-        //     convertFromJson(document, str);
-
-        //     http::HttpClient::getDriver()->performPostRequest(
-        //         HTTP_API_HOST,
-        //         HTTP_API_PORT,
-        //         HTTP_API_REGISTER_GATEWAY,
-        //         {
-        //             .data = str.c_str(),
-        //             .headers = {
-        //                 {"Content-Type", "application/json"}
-        //             }
-        //         });
-        // }
-    }
+    getOrCreateUUID(gatewayUUID, gatewayId);
 
     storage::BufferManager<storage::FlashBuffer> buffers;
-
-    esp_sntp_config_t config = ESP_NETIF_SNTP_DEFAULT_CONFIG("pool.ntp.org");
-    esp_netif_sntp_init(&config);
-
-    if (esp_netif_sntp_sync_wait(pdMS_TO_TICKS(10000)) != ESP_OK) {
-        ESP_LOGI("SNTP", "Failed to update system time within 10s timeout");
-    }
 
     time_t now;
     struct tm timeinfo;
@@ -148,12 +134,9 @@ extern "C" void app_main() {
 
     // Skapa buffer värden loop
     while (1) {
-        // ESP_LOGI(http::HttpResponse::status);
         time(&now);
-        // localtime_r(&now, &tm);
 
         if (!buffer->hasData()) continue;
-
 
         constexpr int elements_to_send = 3;
 
@@ -168,9 +151,9 @@ extern "C" void app_main() {
         ESP_LOGI("__JSON__", "%s", data.c_str());
 
         http::HttpResponse resp = http::HttpClient::getDriver()->performPostRequest(
-            HTTP_API_HOST,
-            HTTP_API_PORT,
-            HTTP_API_SUBMIT_BATCH,
+            info.host,
+            info.port,
+            info.submit_batch,
             {
                 .data = data.c_str(),
                 .headers = {
@@ -178,7 +161,7 @@ extern "C" void app_main() {
                         "Content-Type", "application/json"
                     }
                 }
-            }, false);
+            }, USE_HTTPS);
 
         if (resp.status == HttpStatus_Ok) {
             for (int i = 0; i < elements_to_send; i++) {
@@ -192,5 +175,51 @@ extern "C" void app_main() {
         vTaskDelay(pdMS_TO_TICKS(2000));
     }
 }
+
+void syncTime() {
+    esp_sntp_config_t config = ESP_NETIF_SNTP_DEFAULT_CONFIG("pool.ntp.org");
+    esp_netif_sntp_init(&config);
+
+    if (esp_netif_sntp_sync_wait(pdMS_TO_TICKS(10000)) != ESP_OK) {
+        ESP_LOGI("SNTP", "Failed to update system time within 10s timeout");
+    }
+}
+
+void getOrCreateUUID(std::string &str, uint32_t gatewayId) {
+    nvs_handle_t handle;
+    nvs_open("gatewayid", NVS_READWRITE, &handle);
+
+    esp_err_t err = nvs_get_u32(handle, "gatewayid", &gatewayId);
+    if (err != ESP_OK || FORCE_CREATE_NEW_UUID) {
+        gatewayId = esp_random();
+        nvs_set_u32(handle, "gatewayid", gatewayId);
+    }
+
+    std::string uuid = uuid::MyUuid<uuid::UuidVersion::NAME_BASED_MD5>
+        (gatewayId).to_string();
+    str = uuid;
+
+    // Cannot automatically register gatewayUUID since core panics with MMU error
+    {
+        JsonDocument document;
+        document["uuid"] = uuid;
+
+        convertFromJson(document, uuid);
+
+        ESP_LOGI("__JSON__", "(Update UUID) %s", uuid.c_str());
+
+        http::HttpClient::getDriver()->performPostRequest(
+            info.host,
+            info.port,
+            info.register_gateway,
+            {
+                .data = uuid.c_str(),
+                .headers = {
+                    {"Content-Type", "application/json"}
+                }
+            }, USE_HTTPS);
+    }
+}
+
 
 #endif  // UNIT_TEST
