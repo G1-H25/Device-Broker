@@ -31,7 +31,7 @@
 #include "secrets/credentials.h"
 
 #define FORCE_CREATE_NEW_UUID 1
-#define USE_HTTPS 0
+#define USE_HTTPS 1
 
 using jenlib::gpio::Pin;
 using jenlib::gpio::PinIndex;
