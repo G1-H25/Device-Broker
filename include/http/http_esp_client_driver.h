@@ -14,7 +14,7 @@
 
 #include "http/http_driver.h"
 
-#define MAX_HTTP_OUTPUT_BUFFER 256
+#define MAX_HTTP_OUTPUT_BUFFER 1024
 
 #define HTTP_LOG_TAG "HTTP_CLIENT"
 

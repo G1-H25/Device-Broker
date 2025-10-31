@@ -15,12 +15,25 @@ These files contains the following information:
 // This does not represent actual endpoints but are just examples.
 //
 // This is most likely incomplete and will need to be updated continuously
-#define HTTP_API_HOST "localhost"  // Host
-#define HTTP_API_PORT 5000 // Port for URL
-#define HTTP_API_ENDPOINT_ADD_MEASUREMENT(id) "/api/package/addEntry"  // POST
-#define HTTP_API_ENDPOINT_ADD_MULTIPLE_MEASUREMENTS "/api/package/addEntries"  // POST
-#define HTTP_API_ENDPOINT_GET_PACKAGE_ID "/api/package"  // GET
-#define HTTP_API_ENDPOINT_GET_TIME "/api/time"  // GET
+#ifndef SECRETS_H_
+#define SECRETS_H_
+
+#define HTTP_API_HOST               "prod.someserver.topdomain"
+#define HTTP_API_PORT               443
+
+#define HTTP_TEST_API_HOST          "dev.someserver.topdomain"
+#define HTTP_TEST_API_PORT          443
+
+#define HTTP_API_HEALTH_ENDPOINT    "/health"
+#define HTTP_API_SUBMIT_BATCH       "/api/gateway/batch"
+#define HTTP_API_SYNC_SENSORS       "/api/delivery/packages"
+#define HTTP_API_REGISTER_GATEWAY   "/api/gateway/register"
+
+#define HTTP_API_JSON_TEMP_KEY      "temp"
+#define HTTP_API_JSON_HUM_KEY       "hum"
+#define HTTP_API_JSON_TIME_KEY      "time"
+
+#endif
 ```
 
 When building on github actions these must be defined when compiling the program otherwise build will fail.
@@ -28,9 +41,20 @@ When building on github actions these must be defined when compiling the program
 ## credentials.h
 
 ```cpp
-// Replace with actual username and password. These are used to authenticate the broker towards the backend server. In exchange we will recieve a JWT.
-#define USERNAME "admin"
-#define PASSWORD "123456"
+#ifndef CREDENTIALS_H_
+#define CREDENTIALS_H_
+
+#define WIFI_PASSWORD "admin"
+#define WIFI_SSID "123456"
+
+#define TEST_WIFI_PASSWORD "admin"
+#define TEST_WIFI_SSID "123456"
+
+#define BACKEND_PASSWORD "example"
+#define BACKEND_USERNAME "big_strong_password123"
+
+#endif  // CREDENTIALS_H_
+
 ```
 
 # Networking

@@ -18,12 +18,15 @@ namespace storage {
 
 class MemoryBuffer : public Storage {
  public:
-    explicit MemoryBuffer(uuid_t uuid);
+    explicit MemoryBuffer(sensor_id_t uuid);
 
     bool pushMeasurement(const MeasurementEntry &measurement) override;
     bool tryPop(MeasurementEntry &out) override;
+    bool tryPop() override;
 
     bool getLatestMeasurement(MeasurementEntry &out) override;
+    bool getMeasurement(MeasurementEntry &out, size_t index) override;
+
 
     void clearAll() override;
  private:

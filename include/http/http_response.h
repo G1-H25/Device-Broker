@@ -12,13 +12,13 @@
 #ifndef INCLUDE_HTTP_HTTP_RESPONSE_H_
 #define INCLUDE_HTTP_HTTP_RESPONSE_H_
 
-#include <string_view>
+#include <string>
 
 namespace http {
 
 typedef struct http_response_t {
     int status;
-    std::string_view data;
+    const char *data;
 } HttpResponse;
 
 }  // namespace http

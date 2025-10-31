@@ -28,13 +28,15 @@ typedef std::array<char, NVS_KEY_NAME_MAX_SIZE> nvs_key_t;
 
 class FlashBuffer : public Storage {
  public:
-    explicit FlashBuffer(uuid_t uuid, uint32_t sensor_id);
+    explicit FlashBuffer(storage::sensor_id_t uuid);
 
     bool pushMeasurement(const MeasurementEntry &measurement) override;
     bool tryPop(MeasurementEntry &out) override;
+    bool tryPop() override;
 
     bool getLatestMeasurement(MeasurementEntry &out) override;
-    bool loadMeasurement(size_t index, MeasurementEntry &out);
+    bool getMeasurement(MeasurementEntry &out, size_t index) override;
+
 
     void clearAll() override;
 
@@ -47,12 +49,11 @@ class FlashBuffer : public Storage {
     MeasurementEntry buffered_measurement_;
 
     entry_id_buffer_t entry_id_buffer_ = { 0 };
-    uint32_t sensor_id_;
     static constexpr uint16_t k_storage_name_size_ = 5;
     static constexpr uint16_t k_storage_index_str_size_ = 5;
     std::array<char, k_storage_name_size_> storage_name_;
 
-    const size_t k_flash_size = sizeof(uuid_t) + sizeof(MeasurementEntry) * BUFFER_SIZE_PER_SENSOR;
+    const size_t k_flash_size = sizeof(sensor_id) + sizeof(MeasurementEntry) * BUFFER_SIZE_PER_SENSOR;
     static bool flash_was_init_;
 
     esp_flash_t flash_chip_;

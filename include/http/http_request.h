@@ -12,11 +12,17 @@
 #ifndef INCLUDE_HTTP_HTTP_REQUEST_H_
 #define INCLUDE_HTTP_HTTP_REQUEST_H_
 
-#include <string_view>
+#include <string>
+#include <vector>
+
+typedef struct http_header_t {
+    const char *name;
+    const char *value;
+} HttpHeader;
 
 typedef struct http_request_t {
-    std::string_view data = "";
-    bool is_json = false;
+    const char *data = "";
+    std::vector<HttpHeader> headers = {};
 } HttpRequest;
 
 #endif  // INCLUDE_HTTP_HTTP_REQUEST_H_

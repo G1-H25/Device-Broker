@@ -13,31 +13,35 @@
 
 #include <cstdint>
 #include <array>
+#include <ctime>
 
 #define BUFFER_SIZE_PER_SENSOR 32
 
 namespace storage {
 
+typedef uint16_t sensor_id_t;
 typedef std::array<uint8_t, 16> uuid_t;
 
 typedef struct measurement_entry_t {
-    uint32_t timestamp;
+    time_t timestamp;
     uint16_t temperature;
     uint16_t humidity;
 } MeasurementEntry;
 
 class Storage {
  public:
-    explicit Storage(uuid_t uuid) : uuid_(uuid) {}
+    explicit Storage(sensor_id_t sensor_id) : sensor_id(sensor_id) {}
 
     virtual bool pushMeasurement(const MeasurementEntry &measurement) = 0;
     virtual bool tryPop(MeasurementEntry &out) = 0;
+    virtual bool tryPop() = 0;
     size_t available();
     bool hasData();
 
     virtual uint8_t getBufferSize() const;
-    virtual const uuid_t getUUID();
+    virtual sensor_id_t getSensorId();
     virtual bool getLatestMeasurement(MeasurementEntry &out) = 0;
+    virtual bool getMeasurement(MeasurementEntry &out, size_t index) = 0;
 
     virtual void clearAll() = 0;
 
@@ -45,7 +49,7 @@ class Storage {
     uint32_t head_ = 0;
     uint32_t entry_count_ = 0;
 
-    uuid_t uuid_;
+    sensor_id_t sensor_id;
 
     const uint8_t buffer_size_ = BUFFER_SIZE_PER_SENSOR;
 };

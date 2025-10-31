@@ -10,12 +10,14 @@
 
 #ifdef ESP_PLATFORM
 
-#include "storage/flash_buffer.h"
 #include <memory.h>
 
 #include <nvs_flash.h>
 #include <esp_flash.h>
 #include <cstdio>
+
+#include "http/sensor_data_sender.h"
+#include "storage/flash_buffer.h"
 
 namespace storage {
 
@@ -29,7 +31,7 @@ std::mutex FlashBuffer::flash_mtx_{};
  * @param uuid - The unique identifier for the sensor.
  * @param sensor_id - The sensor id is used to store values in the nvs.
  */
-FlashBuffer::FlashBuffer(uuid_t uuid, uint32_t sensor_id) : Storage(uuid), sensor_id_(sensor_id) {
+FlashBuffer::FlashBuffer(storage::sensor_id_t sensor_id) : Storage(sensor_id) {
     std::unique_lock<std::mutex> lock(FlashBuffer::flash_mtx_);
     if (flash_was_init_ == false) {
         if (nvs_flash_init() != ESP_OK) return;
@@ -37,7 +39,7 @@ FlashBuffer::FlashBuffer(uuid_t uuid, uint32_t sensor_id) : Storage(uuid), senso
         nvs_open("registered_sensors", nvs_open_mode_t::NVS_READWRITE, &registered_sensors_handle);
     }
 
-    snprintf(this->storage_name_.data(), this->storage_name_.size(), "%lx", this->sensor_id_);
+    snprintf(this->storage_name_.data(), this->storage_name_.size(), "%x", sensor_id);
 
     esp_err_t err = nvs_open(
         this->storage_name_.begin(),
@@ -51,7 +53,7 @@ FlashBuffer::FlashBuffer(uuid_t uuid, uint32_t sensor_id) : Storage(uuid), senso
     nvs_iterator_t iterator;
     nvs_entry_find_in_handle(registered_sensors_handle, nvs_type_t::NVS_TYPE_BLOB, &iterator);
 
-    // uuid_t temp_uuid;
+    // sensor_id_t temp_uuid;
     // size_t uuid_size = temp_uuid.size();
 
     // nvs_entry_info_t info;
@@ -72,7 +74,12 @@ FlashBuffer::FlashBuffer(uuid_t uuid, uint32_t sensor_id) : Storage(uuid), senso
 
     nvs_release_iterator(iterator);
 
-    nvs_set_blob(registered_sensors_handle, getKeyFromIndex(this->sensor_id_).data(), uuid.data(), uuid.size());
+    nvs_set_blob(
+        registered_sensors_handle,
+        getKeyFromIndex(this->sensor_id).data(),
+        &this->sensor_id,
+        sizeof(this->sensor_id));
+
     nvs_commit(registered_sensors_handle);
 }
 
@@ -113,6 +120,28 @@ bool FlashBuffer::pushMeasurement(const MeasurementEntry &measurement) {
 bool FlashBuffer::tryPop(MeasurementEntry &out) {
     if (!this->flash_was_init_ || entry_count_ == 0) return false;
 
+    this->getLatestMeasurement(out);
+
+    --entry_count_;
+    --head_ %= this->buffer_size_;
+
+    esp_err_t err = nvs_erase_key(
+        this->nvs_handle_,
+        reinterpret_cast<const char *>(getKeyFromIndex(head_ + 1).data()));
+
+    std::unique_lock<std::mutex> lock(FlashBuffer::flash_mtx_);
+    nvs_commit(this->nvs_handle_);
+    return err == ESP_OK;
+}
+
+/**
+ * @brief Pop a value from flash.
+ *
+ * @returns True if success, false otherwise
+ */
+bool FlashBuffer::tryPop() {
+    if (!this->flash_was_init_ || entry_count_ == 0) return false;
+
     --entry_count_;
     --head_ %= this->buffer_size_;
 
@@ -133,10 +162,11 @@ bool FlashBuffer::getLatestMeasurement(MeasurementEntry &out) {
 /**
  * @brief Load a measurement from the flash memory
  *
+ * @param out When successfull the request value is stored here.
  * @param index The index of the measurement which will be retrieved
  * @returns `MeasurementEntry *` or a `nullptr` if failed
  */
-bool FlashBuffer::loadMeasurement(size_t index, MeasurementEntry &out) {
+bool FlashBuffer::getMeasurement(MeasurementEntry &out, size_t index) {
     if (!this->flash_was_init_ || index >= this->available()) return false;
 
     nvs_key_t temp_str;
@@ -154,6 +184,12 @@ bool FlashBuffer::loadMeasurement(size_t index, MeasurementEntry &out) {
     return res == ESP_OK;
 }
 
+/**
+ * @brief Convert an index to a nvs_key_t.
+ *
+ * @param index The index to convert.
+ * @return constexpr nvs_key_t
+ */
 constexpr nvs_key_t FlashBuffer::getKeyFromIndex(size_t index) {
     nvs_key_t temp_str{ 0 };
     snprintf(temp_str.begin(), temp_str.size(), "%x", index);
@@ -170,6 +206,11 @@ void FlashBuffer::clearAll() {
     nvs_commit(this->nvs_handle_);
 }
 
+/**
+ * @brief Try to initialize NVS.
+ *
+ * @returns True if successful, false otherwise.
+ */
 bool FlashBuffer::tryInitNVS() {
     if (FlashBuffer::flash_was_init_) return false;
 

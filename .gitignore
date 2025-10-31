@@ -11,3 +11,5 @@ include/secrets
 
 secrets/
 build/
+
+jenlib/

@@ -58,12 +58,13 @@ void test_sensor_buffer_pop() {
 }
 
 void test_sensor_buffer_data_integrity() {
-    storage::MemoryBuffer buffer = storage::MemoryBuffer({ 1 });
+    constexpr storage::sensor_id_t id = 100;
+    storage::MemoryBuffer buffer = storage::MemoryBuffer(id);
     storage::MeasurementEntry entry;
 
     buffer.pushMeasurement({current_time, temperature, humidity});
 
-    TEST_ASSERT_EQUAL(*(__uint128_t *) storage::uuid_t{ 1 }.data(), *(__uint128_t *) buffer.getUUID().data());
+    TEST_ASSERT_EQUAL(id, buffer.getSensorId());
 
     TEST_ASSERT_EQUAL(current_time, entry.timestamp);
     TEST_ASSERT_EQUAL(temperature, entry.temperature);
